@@ -2,7 +2,6 @@ const router = require('express').Router();
 const { Student, Class } = require('../models');
 const auth = require('../middleware/auth');
 const { requireActivated } = require('../middleware/auth');
-const PDFDocument = require('pdfkit');
 const { createCanvas, loadImage } = require('canvas');
 const archiver = require('archiver');
 const path = require('path');
