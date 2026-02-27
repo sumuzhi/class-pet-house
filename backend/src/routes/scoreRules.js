@@ -32,6 +32,7 @@ router.post('/', auth, requireActivated, async (req, res) => {
     }
 
     const count = await ScoreRule.count({ where: { class_id } });
+    if (count >= 50) return res.status(400).json({ error: '最多创建50条规则' });
     const rule = await ScoreRule.create({
       class_id, name, icon: icon || '⭐', value, sort_order: count
     });

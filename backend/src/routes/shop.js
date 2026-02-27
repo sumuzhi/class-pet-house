@@ -29,6 +29,9 @@ router.post('/', auth, requireActivated, async (req, res) => {
     if (!name || typeof name !== 'string') return res.status(400).json({ error: '商品名称不能为空' });
     if (!price || typeof price !== 'number' || price < 1) return res.status(400).json({ error: '价格至少为1' });
 
+    const itemCount = await ShopItem.count({ where: { class_id } });
+    if (itemCount >= 100) return res.status(400).json({ error: '最多创建100个商品' });
+
     const item = await ShopItem.create({ class_id, name, description, icon, price, stock: stock ?? -1 });
     res.json(item);
   } catch (err) {

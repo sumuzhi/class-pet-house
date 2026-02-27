@@ -40,7 +40,7 @@ router.post('/', auth, requireActivated, async (req, res) => {
     const cls = await Class.findOne({ where: { id: class_id, user_id: req.userId } });
     if (!cls) return res.status(404).json({ error: '班级不存在' });
 
-    const ids = Array.isArray(student_ids) ? student_ids : [student_ids];
+    const ids = Array.isArray(student_ids) ? student_ids.slice(0, 200) : [student_ids];
     const results = [];
 
     // 毕业记录（无 rule_id）
