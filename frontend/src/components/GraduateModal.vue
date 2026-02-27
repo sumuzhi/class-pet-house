@@ -30,11 +30,13 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useClassStore } from '../stores/class'
+import { useEscClose } from '../composables/useEscClose'
 import { PETS } from '../utils/pets'
 import api from '../utils/api'
 
 const props = defineProps({ student: Object })
 const emit = defineEmits(['close', 'graduated'])
+useEscClose(emit)
 const classStore = useClassStore()
 const loading = ref(false)
 

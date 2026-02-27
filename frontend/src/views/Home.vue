@@ -22,6 +22,8 @@
         :growth-stages="classStore.currentClass?.growth_stages || defaultStages"
         @click="handleCardClick(s)"
         @select="$emit('select-student', s.id)"
+        @graduate="handleGraduate(s)"
+        @show-badges="handleShowBadges(s)"
       />
     </div>
 
@@ -46,6 +48,21 @@
       @close="showPetModal = false"
       @selected="onPetSelected"
     />
+
+    <!-- 毕业典礼弹窗 -->
+    <GraduateModal
+      v-if="showGraduateModal"
+      :student="selectedStudent"
+      @close="showGraduateModal = false"
+      @graduated="onGraduated"
+    />
+
+    <!-- 徽章墙弹窗 -->
+    <BadgeWall
+      v-if="showBadgeWall"
+      :student="selectedStudent"
+      @close="showBadgeWall = false"
+    />
   </div>
 </template>
 
@@ -55,6 +72,8 @@ import { useClassStore } from '../stores/class'
 import StudentCard from '../components/StudentCard.vue'
 import ScoreRuleModal from '../components/ScoreRuleModal.vue'
 import PetSelectModal from '../components/PetSelectModal.vue'
+import GraduateModal from '../components/GraduateModal.vue'
+import BadgeWall from '../components/BadgeWall.vue'
 import api from '../utils/api'
 
 const props = defineProps({
@@ -70,6 +89,8 @@ const classStore = useClassStore()
 const sortMode = ref('manual')
 const showScoreModal = ref(false)
 const showPetModal = ref(false)
+const showGraduateModal = ref(false)
+const showBadgeWall = ref(false)
 const selectedStudent = ref(null)
 const defaultStages = [0, 5, 10, 20, 30, 45, 60, 75, 90, 100]
 
@@ -95,7 +116,9 @@ const filteredStudents = computed(() => {
   } else if (sortMode.value === 'food') {
     list.sort((a, b) => b.food_count - a.food_count)
   } else if (sortMode.value === 'progress') {
-    list.sort((a, b) => b.food_count - a.food_count)
+    const stages = classStore.currentClass?.growth_stages || defaultStages
+    const max = stages[stages.length - 1]
+    list.sort((a, b) => (b.food_count / max) - (a.food_count / max))
   }
 
   return list
@@ -139,5 +162,20 @@ async function onScored() {
 async function onPetSelected() {
   showPetModal.value = false
   await classStore.fetchStudents()
+}
+
+function handleGraduate(student) {
+  selectedStudent.value = student
+  showGraduateModal.value = true
+}
+
+async function onGraduated() {
+  showGraduateModal.value = false
+  await classStore.fetchStudents()
+}
+
+function handleShowBadges(student) {
+  selectedStudent.value = student
+  showBadgeWall.value = true
 }
 </script>

@@ -12,27 +12,41 @@
           </button>
         </div>
 
-        <!-- 中间：搜索框 -->
-        <div class="hidden md:flex items-center">
+        <!-- 中间：搜索框（移动端也显示） -->
+        <div class="flex items-center">
           <input v-model="searchQuery" type="text" placeholder="🔍 搜索学生..."
-            class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm focus:border-pink-300 outline-none w-48" />
+            class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm focus:border-pink-300 outline-none w-32 md:w-48" />
         </div>
 
         <!-- 右侧：功能按钮 -->
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1">
           <button v-if="!batchMode" @click="batchMode = true"
             class="p-2 rounded-lg hover:bg-gray-100 text-gray-500 text-sm" title="批量操作">👥</button>
-          <button v-else @click="batchMode = false; selectedStudents.clear()"
-            class="p-2 rounded-lg bg-red-50 text-red-500 text-sm">❌ 退出</button>
+          <button v-else @click="exitBatch"
+            class="p-2 rounded-lg bg-red-50 text-red-500 text-sm">❌</button>
 
           <button @click="undoMode = !undoMode"
             :class="undoMode ? 'bg-red-50 text-red-500' : 'text-gray-500 hover:bg-gray-100'"
             class="p-2 rounded-lg text-sm" title="撤回">↩️</button>
 
-          <router-link to="/history" class="p-2 rounded-lg hover:bg-gray-100 text-gray-500 text-sm" title="成长记录">☁️</router-link>
-          <router-link to="/leaderboard" class="p-2 rounded-lg hover:bg-gray-100 text-gray-500 text-sm" title="光荣榜">🏆</router-link>
-          <router-link to="/shop" class="p-2 rounded-lg hover:bg-gray-100 text-gray-500 text-sm" title="小卖部">🛍️</router-link>
-          <router-link to="/settings" class="p-2 rounded-lg hover:bg-gray-100 text-gray-500 text-sm" title="设置">⚙️</router-link>
+          <!-- 移动端：更多菜单 -->
+          <div class="relative md:hidden">
+            <button @click="showMenu = !showMenu" class="p-2 rounded-lg hover:bg-gray-100 text-gray-500 text-sm">☰</button>
+            <div v-if="showMenu" class="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border py-1 w-32 z-50">
+              <router-link to="/history" class="block px-3 py-2 text-sm hover:bg-gray-50" @click="showMenu=false">☁️ 成长记录</router-link>
+              <router-link to="/leaderboard" class="block px-3 py-2 text-sm hover:bg-gray-50" @click="showMenu=false">🏆 光荣榜</router-link>
+              <router-link to="/shop" class="block px-3 py-2 text-sm hover:bg-gray-50" @click="showMenu=false">🛍️ 小卖部</router-link>
+              <router-link to="/settings" class="block px-3 py-2 text-sm hover:bg-gray-50" @click="showMenu=false">⚙️ 设置</router-link>
+            </div>
+          </div>
+
+          <!-- 桌面端：直接显示 -->
+          <div class="hidden md:flex items-center gap-1">
+            <router-link to="/history" class="p-2 rounded-lg hover:bg-gray-100 text-gray-500 text-sm" title="成长记录">☁️</router-link>
+            <router-link to="/leaderboard" class="p-2 rounded-lg hover:bg-gray-100 text-gray-500 text-sm" title="光荣榜">🏆</router-link>
+            <router-link to="/shop" class="p-2 rounded-lg hover:bg-gray-100 text-gray-500 text-sm" title="小卖部">🛍️</router-link>
+            <router-link to="/settings" class="p-2 rounded-lg hover:bg-gray-100 text-gray-500 text-sm" title="设置">⚙️</router-link>
+          </div>
         </div>
       </div>
     </nav>
@@ -64,45 +78,69 @@
 
     <!-- 批量操作底栏 -->
     <div v-if="batchMode" class="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t p-3 flex items-center justify-between z-50">
-      <span class="text-sm text-gray-500">已选 {{ selectedStudents.size }} 人</span>
+      <span class="text-sm text-gray-500">已选 {{ selectedIds.length }} 人</span>
       <div class="flex gap-2">
         <button @click="selectAll" class="px-3 py-1.5 bg-gray-100 rounded-lg text-sm">全选</button>
-        <button @click="handleBatchScore" class="px-4 py-1.5 bg-pink-400 text-white rounded-lg text-sm">✨ 批量喂养</button>
+        <button @click="showBatchScoreModal = true" :disabled="!selectedIds.length"
+          class="px-4 py-1.5 bg-pink-400 text-white rounded-lg text-sm disabled:opacity-50">✨ 批量喂养</button>
       </div>
     </div>
 
     <!-- 班级切换弹窗 -->
     <ClassModal v-if="showClassModal" @close="showClassModal = false" />
+
+    <!-- 批量喂养弹窗 -->
+    <ScoreRuleModal
+      v-if="showBatchScoreModal"
+      :student="null"
+      :batch-ids="selectedIds"
+      @close="showBatchScoreModal = false"
+      @scored="onBatchScored"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useClassStore } from '../stores/class'
 import ClassModal from '../components/ClassModal.vue'
+import ScoreRuleModal from '../components/ScoreRuleModal.vue'
 
 const classStore = useClassStore()
 const searchQuery = ref('')
 const batchMode = ref(false)
 const undoMode = ref(false)
 const activeGroup = ref(null)
-const selectedStudents = ref(new Set())
+const selectedIds = ref([])
 const showClassModal = ref(false)
+const showBatchScoreModal = ref(false)
+const showMenu = ref(false)
+
+// 兼容旧的 Set 接口给子组件用
+const selectedStudents = computed(() => new Set(selectedIds.value))
 
 function toggleStudent(id) {
-  if (selectedStudents.value.has(id)) {
-    selectedStudents.value.delete(id)
+  const idx = selectedIds.value.indexOf(id)
+  if (idx >= 0) {
+    selectedIds.value.splice(idx, 1)
   } else {
-    selectedStudents.value.add(id)
+    selectedIds.value.push(id)
   }
 }
 
 function selectAll() {
-  classStore.students.forEach(s => selectedStudents.value.add(s.id))
+  selectedIds.value = classStore.students.map(s => s.id)
 }
 
-function handleBatchScore() {
-  // TODO: 弹出积分规则选择
+function exitBatch() {
+  batchMode.value = false
+  selectedIds.value = []
+}
+
+async function onBatchScored() {
+  showBatchScoreModal.value = false
+  await classStore.fetchStudents()
+  exitBatch()
 }
 
 onMounted(async () => {

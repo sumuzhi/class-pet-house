@@ -1,7 +1,9 @@
 <template>
   <div class="fixed inset-0 bg-black/30 z-50 flex items-end sm:items-center justify-center" @click.self="$emit('close')">
     <div class="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl w-full max-w-sm p-5 max-h-[70vh] overflow-y-auto">
-      <h3 class="text-center font-bold text-gray-700 mb-1">{{ student.name }}</h3>
+      <h3 class="text-center font-bold text-gray-700 mb-1">
+        {{ student ? student.name : `批量操作 (${batchIds.length}人)` }}
+      </h3>
       <p class="text-center text-xs text-gray-400 mb-4">选择加分/扣分项</p>
 
       <div class="grid grid-cols-2 gap-2">
@@ -24,10 +26,15 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useClassStore } from '../stores/class'
+import { useEscClose } from '../composables/useEscClose'
 import api from '../utils/api'
 
-const props = defineProps({ student: Object })
+const props = defineProps({
+  student: Object,
+  batchIds: { type: Array, default: () => [] }
+})
 const emit = defineEmits(['close', 'scored'])
+useEscClose(emit)
 const classStore = useClassStore()
 const rules = ref([])
 
@@ -38,9 +45,12 @@ onMounted(async () => {
 
 async function applyRule(rule) {
   try {
+    const ids = props.batchIds.length
+      ? props.batchIds
+      : [props.student.id]
     await api.post('/history', {
       class_id: classStore.currentClass.id,
-      student_ids: [props.student.id],
+      student_ids: ids,
       rule_id: rule.id
     })
     emit('scored')

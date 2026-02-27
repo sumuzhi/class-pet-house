@@ -11,10 +11,31 @@
         <p class="text-xs text-gray-400">{{ item.description }}</p>
         <p class="text-sm text-pink-500 font-bold mt-1">🏅 {{ item.price }}</p>
         <p v-if="item.stock >= 0" class="text-xs text-gray-400">库存: {{ item.stock }}</p>
-        <button @click="exchangeItem(item)"
+        <button @click="openExchange(item)"
           class="mt-2 px-3 py-1 bg-pink-400 text-white rounded-lg text-xs hover:bg-pink-500 transition">
           兑换
         </button>
+      </div>
+    </div>
+
+    <!-- 兑换弹窗（选择学生） -->
+    <div v-if="showExchangeModal" class="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4"
+      @click.self="showExchangeModal = false">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-xs p-5">
+        <h3 class="text-center font-bold text-gray-700 mb-3">
+          兑换「{{ exchangeTarget?.name }}」
+        </h3>
+        <p class="text-center text-xs text-gray-400 mb-3">选择学生</p>
+        <div class="max-h-60 overflow-y-auto space-y-1">
+          <button v-for="s in classStore.students" :key="s.id"
+            @click="confirmExchange(s)"
+            class="w-full text-left px-3 py-2 rounded-lg hover:bg-pink-50 text-sm transition flex justify-between">
+            <span>{{ s.name }}</span>
+            <span class="text-xs text-gray-400">🏅{{ (s.badges || []).length }}</span>
+          </button>
+        </div>
+        <button @click="showExchangeModal = false"
+          class="mt-3 w-full py-2 bg-gray-100 text-gray-500 rounded-lg text-sm">取消</button>
       </div>
     </div>
 
@@ -53,6 +74,8 @@ const classStore = useClassStore()
 const items = ref([])
 const records = ref([])
 const newItem = reactive({ name: '', price: 1 })
+const showExchangeModal = ref(false)
+const exchangeTarget = ref(null)
 
 onMounted(async () => {
   if (!classStore.currentClass) return
@@ -73,18 +96,20 @@ async function addItem() {
   newItem.price = 1
 }
 
-async function exchangeItem(item) {
-  const student = prompt('输入学生姓名')
-  if (!student) return
-  const s = classStore.students.find(x => x.name === student)
-  if (!s) { alert('学生不存在'); return }
+function openExchange(item) {
+  exchangeTarget.value = item
+  showExchangeModal.value = true
+}
+
+async function confirmExchange(student) {
   try {
     await api.post('/shop/exchange', {
       class_id: classStore.currentClass.id,
-      student_id: s.id,
-      item_id: item.id
+      student_id: student.id,
+      item_id: exchangeTarget.value.id
     })
-    alert('兑换成功')
+    showExchangeModal.value = false
+    alert('兑换成功！')
     records.value = await api.get(`/shop/exchange/${classStore.currentClass.id}`)
   } catch (err) { alert(err.error || '兑换失败') }
 }

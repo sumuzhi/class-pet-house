@@ -22,9 +22,11 @@
 <script setup>
 import { ref } from 'vue'
 import { useClassStore } from '../stores/class'
+import { useEscClose } from '../composables/useEscClose'
 import api from '../utils/api'
 
 const emit = defineEmits(['close', 'added'])
+useEscClose(emit)
 const classStore = useClassStore()
 const text = ref('')
 const loading = ref(false)

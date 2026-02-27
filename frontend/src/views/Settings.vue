@@ -85,6 +85,13 @@
       class="fixed bottom-6 right-6 px-6 py-3 bg-pink-400 text-white rounded-xl shadow-lg hover:bg-pink-500 transition active:scale-95">
       💾 保存设置
     </button>
+
+    <!-- 批量添加弹窗 -->
+    <BatchAddModal
+      v-if="showBatchAdd"
+      @close="showBatchAdd = false"
+      @added="showBatchAdd = false"
+    />
   </div>
 </template>
 
@@ -94,6 +101,7 @@ import { useRouter } from 'vue-router'
 import { useClassStore } from '../stores/class'
 import { useAuthStore } from '../stores/auth'
 import api from '../utils/api'
+import BatchAddModal from '../components/BatchAddModal.vue'
 
 const router = useRouter()
 const classStore = useClassStore()

@@ -31,8 +31,9 @@
       <p class="text-center text-xs text-gray-400 mt-1">{{ student.food_count }} / {{ maxFood }}</p>
     </div>
 
-    <!-- 徽章数量 -->
-    <div v-if="badges.length" class="absolute top-2 right-2 bg-yellow-400 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+    <!-- 徽章数量（可点击查看徽章墙） -->
+    <div v-if="badges.length" class="absolute top-2 right-2 bg-yellow-400 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center cursor-pointer hover:bg-yellow-500 transition"
+      @click.stop="$emit('show-badges')">
       {{ badges.length }}
     </div>
 
@@ -51,7 +52,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { PETS } from '../utils/pets'
 
 const props = defineProps({
@@ -62,9 +63,18 @@ const props = defineProps({
   growthStages: Array
 })
 
-defineEmits(['click', 'select', 'change-pet', 'graduate'])
+defineEmits(['click', 'select', 'change-pet', 'graduate', 'show-badges'])
 
 const justScored = ref(false)
+
+// 监听 food_count 变化触发动画
+watch(() => props.student.food_count, (newVal, oldVal) => {
+  if (oldVal !== undefined && newVal !== oldVal) {
+    justScored.value = true
+    setTimeout(() => { justScored.value = false }, 800)
+  }
+})
+
 const badges = computed(() => props.student.badges || [])
 const maxFood = computed(() => {
   const stages = props.growthStages || [0,5,10,20,30,45,60,75,90,100]

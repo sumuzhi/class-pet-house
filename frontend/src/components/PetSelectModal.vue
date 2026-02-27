@@ -18,11 +18,13 @@
 
 <script setup>
 import { useClassStore } from '../stores/class'
+import { useEscClose } from '../composables/useEscClose'
 import { PETS } from '../utils/pets'
 import api from '../utils/api'
 
 const props = defineProps({ student: Object })
 const emit = defineEmits(['close', 'selected'])
+useEscClose(emit)
 const classStore = useClassStore()
 const pets = PETS
 

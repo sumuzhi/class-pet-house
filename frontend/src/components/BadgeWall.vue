@@ -25,10 +25,12 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useEscClose } from '../composables/useEscClose'
 import { PETS } from '../utils/pets'
 
 const props = defineProps({ student: Object })
-defineEmits(['close'])
+const emit = defineEmits(['close'])
+useEscClose(emit)
 
 const badges = computed(() => props.student.badges || [])
 
