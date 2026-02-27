@@ -1,15 +1,18 @@
 const router = require('express').Router();
 const { History, Student, Class, ScoreRule } = require('../models');
 const auth = require('../middleware/auth');
+const { requireActivated } = require('../middleware/auth');
 const { broadcast } = require('./sync');
 
 // 获取班级操作历史
-router.get('/class/:classId', auth, async (req, res) => {
+router.get('/class/:classId', auth, requireActivated, async (req, res) => {
   try {
     const cls = await Class.findOne({ where: { id: req.params.classId, user_id: req.userId } });
     if (!cls) return res.status(404).json({ error: '班级不存在' });
 
-    const { limit = 50, offset = 0, student_id } = req.query;
+    const { limit: rawLimit = 50, offset: rawOffset = 0, student_id } = req.query;
+    const limit = Math.min(Math.max(1, parseInt(rawLimit) || 50), 200);
+    const offset = Math.max(0, parseInt(rawOffset) || 0);
     const where = { class_id: cls.id };
     if (student_id) where.student_id = student_id;
 
@@ -27,17 +30,33 @@ router.get('/class/:classId', auth, async (req, res) => {
 });
 
 // 创建操作记录（加分/扣分）
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, requireActivated, async (req, res) => {
   try {
-    const { class_id, student_ids, rule_id } = req.body;
+    const { class_id, student_ids, rule_id, type: recordType } = req.body;
     const cls = await Class.findOne({ where: { id: class_id, user_id: req.userId } });
     if (!cls) return res.status(404).json({ error: '班级不存在' });
 
-    const rule = await ScoreRule.findByPk(rule_id);
-    if (!rule) return res.status(404).json({ error: '规则不存在' });
-
     const ids = Array.isArray(student_ids) ? student_ids : [student_ids];
     const results = [];
+
+    // 毕业记录（无 rule_id）
+    if (!rule_id && recordType === 'graduate') {
+      for (const sid of ids) {
+        const student = await Student.findOne({ where: { id: sid, class_id } });
+        if (!student) continue;
+        const record = await History.create({
+          class_id, student_id: sid,
+          rule_id: null, rule_name: '宠物毕业',
+          value: 0, type: 'graduate'
+        });
+        results.push({ student_id: sid, record_id: record.id });
+      }
+      return res.json({ results });
+    }
+
+    // 普通加分/扣分
+    const rule = await ScoreRule.findByPk(rule_id);
+    if (!rule) return res.status(404).json({ error: '规则不存在' });
 
     for (const sid of ids) {
       const student = await Student.findOne({ where: { id: sid, class_id } });
@@ -62,7 +81,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 // 撤回操作
-router.post('/revoke', auth, async (req, res) => {
+router.post('/revoke', auth, requireActivated, async (req, res) => {
   try {
     const { record_id } = req.body;
     const record = await History.findByPk(record_id);
@@ -86,7 +105,7 @@ router.post('/revoke', auth, async (req, res) => {
 });
 
 // 批量撤回
-router.post('/revoke-batch', auth, async (req, res) => {
+router.post('/revoke-batch', auth, requireActivated, async (req, res) => {
   try {
     const { record_ids } = req.body;
     if (!Array.isArray(record_ids)) return res.status(400).json({ error: '参数错误' });
@@ -101,7 +120,7 @@ router.post('/revoke-batch', auth, async (req, res) => {
 
       const student = await Student.findByPk(record.student_id);
       if (student) {
-        await student.update({ food_count: student.food_count - record.value });
+        await student.update({ food_count: Math.max(0, student.food_count - record.value) });
       }
       await record.update({ is_revoked: true });
       count++;
@@ -113,7 +132,7 @@ router.post('/revoke-batch', auth, async (req, res) => {
 });
 
 // 批量删除历史
-router.post('/batch-delete', auth, async (req, res) => {
+router.post('/batch-delete', auth, requireActivated, async (req, res) => {
   try {
     const { record_ids } = req.body;
     if (!Array.isArray(record_ids)) return res.status(400).json({ error: '参数错误' });

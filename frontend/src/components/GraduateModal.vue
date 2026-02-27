@@ -64,7 +64,7 @@ async function handleGraduate() {
     await api.post('/history', {
       class_id: classStore.currentClass.id,
       student_ids: [props.student.id],
-      rule_id: null
+      type: 'graduate'
     }).catch(() => {})
     emit('graduated')
   } catch (err) {

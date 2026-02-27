@@ -1,9 +1,11 @@
 const router = require('express').Router();
-const { Class, Student, ScoreRule, ShopItem, Group } = require('../models');
+const { Class, Student, ScoreRule, ShopItem, Group, History, ExchangeRecord } = require('../models');
+const sequelize = require('../config/database');
 const auth = require('../middleware/auth');
+const { requireActivated } = require('../middleware/auth');
 
 // 获取班级列表
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, requireActivated, async (req, res) => {
   try {
     const classes = await Class.findAll({
       where: { user_id: req.userId },
@@ -16,7 +18,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // 创建班级
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, requireActivated, async (req, res) => {
   try {
     const { name } = req.body;
     if (!name) return res.status(400).json({ error: '班级名称不能为空' });
@@ -34,7 +36,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 // 更新班级
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, requireActivated, async (req, res) => {
   try {
     const cls = await Class.findOne({ where: { id: req.params.id, user_id: req.userId } });
     if (!cls) return res.status(404).json({ error: '班级不存在' });
@@ -54,7 +56,8 @@ router.put('/:id', auth, async (req, res) => {
 });
 
 // 删除班级
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, requireActivated, async (req, res) => {
+  const t = await sequelize.transaction();
   try {
     const count = await Class.count({ where: { user_id: req.userId } });
     if (count <= 1) return res.status(400).json({ error: '至少保留一个班级' });
@@ -62,13 +65,18 @@ router.delete('/:id', auth, async (req, res) => {
     const cls = await Class.findOne({ where: { id: req.params.id, user_id: req.userId } });
     if (!cls) return res.status(404).json({ error: '班级不存在' });
 
-    await Student.destroy({ where: { class_id: cls.id } });
-    await ScoreRule.destroy({ where: { class_id: cls.id } });
-    await ShopItem.destroy({ where: { class_id: cls.id } });
-    await Group.destroy({ where: { class_id: cls.id } });
-    await cls.destroy();
+    await History.destroy({ where: { class_id: cls.id }, transaction: t });
+    await ExchangeRecord.destroy({ where: { class_id: cls.id }, transaction: t });
+    await Student.destroy({ where: { class_id: cls.id }, transaction: t });
+    await ScoreRule.destroy({ where: { class_id: cls.id }, transaction: t });
+    await ShopItem.destroy({ where: { class_id: cls.id }, transaction: t });
+    await Group.destroy({ where: { class_id: cls.id }, transaction: t });
+    await cls.destroy({ transaction: t });
+
+    await t.commit();
     res.json({ message: '删除成功' });
   } catch (err) {
+    await t.rollback();
     res.status(500).json({ error: '删除失败' });
   }
 });

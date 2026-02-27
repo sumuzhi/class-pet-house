@@ -1,9 +1,10 @@
 const router = require('express').Router();
 const { ShopItem, ExchangeRecord, Student, Class } = require('../models');
 const auth = require('../middleware/auth');
+const { requireActivated } = require('../middleware/auth');
 
 // 获取班级商品
-router.get('/class/:classId', auth, async (req, res) => {
+router.get('/class/:classId', auth, requireActivated, async (req, res) => {
   try {
     const cls = await Class.findOne({ where: { id: req.params.classId, user_id: req.userId } });
     if (!cls) return res.status(404).json({ error: '班级不存在' });
@@ -19,7 +20,7 @@ router.get('/class/:classId', auth, async (req, res) => {
 });
 
 // 添加商品
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, requireActivated, async (req, res) => {
   try {
     const { class_id, name, description, icon, price, stock } = req.body;
     const cls = await Class.findOne({ where: { id: class_id, user_id: req.userId } });
@@ -34,7 +35,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 // 更新商品
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, requireActivated, async (req, res) => {
   try {
     const item = await ShopItem.findByPk(req.params.id);
     if (!item) return res.status(404).json({ error: '商品不存在' });
@@ -57,7 +58,7 @@ router.put('/:id', auth, async (req, res) => {
 });
 
 // 删除商品
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, requireActivated, async (req, res) => {
   try {
     const item = await ShopItem.findByPk(req.params.id);
     if (!item) return res.status(404).json({ error: '商品不存在' });
@@ -73,7 +74,7 @@ router.delete('/:id', auth, async (req, res) => {
 });
 
 // 兑换商品
-router.post('/exchange', auth, async (req, res) => {
+router.post('/exchange', auth, requireActivated, async (req, res) => {
   try {
     const { class_id, student_id, item_id } = req.body;
     const cls = await Class.findOne({ where: { id: class_id, user_id: req.userId } });
@@ -117,7 +118,7 @@ router.post('/exchange', auth, async (req, res) => {
 });
 
 // 获取兑换记录
-router.get('/exchange/:classId', auth, async (req, res) => {
+router.get('/exchange/:classId', auth, requireActivated, async (req, res) => {
   try {
     const cls = await Class.findOne({ where: { id: req.params.classId, user_id: req.userId } });
     if (!cls) return res.status(404).json({ error: '班级不存在' });

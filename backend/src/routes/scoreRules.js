@@ -1,9 +1,10 @@
 const router = require('express').Router();
 const { ScoreRule, Class } = require('../models');
 const auth = require('../middleware/auth');
+const { requireActivated } = require('../middleware/auth');
 
 // 获取班级积分规则
-router.get('/class/:classId', auth, async (req, res) => {
+router.get('/class/:classId', auth, requireActivated, async (req, res) => {
   try {
     const cls = await Class.findOne({
       where: { id: req.params.classId, user_id: req.userId }
@@ -21,7 +22,7 @@ router.get('/class/:classId', auth, async (req, res) => {
 });
 
 // 添加积分规则
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, requireActivated, async (req, res) => {
   try {
     const { class_id, name, icon, value } = req.body;
     const cls = await Class.findOne({ where: { id: class_id, user_id: req.userId } });
@@ -41,7 +42,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 // 更新积分规则
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, requireActivated, async (req, res) => {
   try {
     const rule = await ScoreRule.findByPk(req.params.id);
     if (!rule) return res.status(404).json({ error: '规则不存在' });
@@ -63,7 +64,7 @@ router.put('/:id', auth, async (req, res) => {
 });
 
 // 删除积分规则
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, requireActivated, async (req, res) => {
   try {
     const rule = await ScoreRule.findByPk(req.params.id);
     if (!rule) return res.status(404).json({ error: '规则不存在' });

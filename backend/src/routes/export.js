@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const { Student, Class } = require('../models');
 const auth = require('../middleware/auth');
+const { requireActivated } = require('../middleware/auth');
 const PDFDocument = require('pdfkit');
 const { createCanvas, loadImage } = require('canvas');
 const archiver = require('archiver');
@@ -111,7 +112,7 @@ async function generateSticker(student, badge) {
 }
 
 // 单个学生导出
-router.post('/certificate', auth, async (req, res) => {
+router.post('/certificate', auth, requireActivated, async (req, res) => {
   try {
     const { student_id, badge_indexes, type, date } = req.body;
     const student = await Student.findByPk(student_id);
@@ -159,7 +160,7 @@ router.post('/certificate', auth, async (req, res) => {
 });
 
 // 批量导出（全班）
-router.post('/batch', auth, async (req, res) => {
+router.post('/batch', auth, requireActivated, async (req, res) => {
   try {
     const { class_id, type, date, max_badges } = req.body;
     const cls = await Class.findOne({ where: { id: class_id, user_id: req.userId } });

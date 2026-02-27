@@ -162,8 +162,10 @@ async function onBatchScored() {
 onMounted(async () => {
   await classStore.fetchClasses()
   if (classStore.currentClass) {
-    await classStore.fetchStudents()
-    await classStore.fetchGroups()
+    await Promise.all([
+      classStore.fetchStudents(),
+      classStore.fetchGroups()
+    ])
   }
 })
 </script>

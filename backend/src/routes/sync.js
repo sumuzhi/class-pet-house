@@ -13,7 +13,16 @@ router.get('/stream', auth, (req, res) => {
 
   const userId = req.userId;
   if (!clients.has(userId)) clients.set(userId, new Set());
-  clients.get(userId).add(res);
+  const userClients = clients.get(userId);
+
+  // 限制每用户最多5个SSE连接，超出则关闭最早的
+  if (userClients.size >= 5) {
+    const oldest = userClients.values().next().value;
+    oldest.end();
+    userClients.delete(oldest);
+  }
+
+  userClients.add(res);
 
   res.write(`data: ${JSON.stringify({ type: 'connected' })}\n\n`);
 

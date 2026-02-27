@@ -1,9 +1,10 @@
 const router = require('express').Router();
 const { Student, Class, Group } = require('../models');
 const auth = require('../middleware/auth');
+const { requireActivated } = require('../middleware/auth');
 
 // 获取班级学生
-router.get('/class/:classId', auth, async (req, res) => {
+router.get('/class/:classId', auth, requireActivated, async (req, res) => {
   try {
     const cls = await Class.findOne({ where: { id: req.params.classId, user_id: req.userId } });
     if (!cls) return res.status(404).json({ error: '班级不存在' });
@@ -20,7 +21,7 @@ router.get('/class/:classId', auth, async (req, res) => {
 });
 
 // 添加学生
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, requireActivated, async (req, res) => {
   try {
     const { class_id, name, names } = req.body;
     const cls = await Class.findOne({ where: { id: class_id, user_id: req.userId } });
@@ -28,6 +29,7 @@ router.post('/', auth, async (req, res) => {
 
     // 批量添加
     if (names && Array.isArray(names)) {
+      if (names.length > 200) return res.status(400).json({ error: '单次最多添加200名学生' });
       const existing = await Student.findAll({ where: { class_id }, attributes: ['name'] });
       const existingNames = new Set(existing.map(s => s.name));
       const count = existing.length;
@@ -56,7 +58,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 // 更新学生
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, requireActivated, async (req, res) => {
   try {
     const student = await Student.findByPk(req.params.id);
     if (!student) return res.status(404).json({ error: '学生不存在' });
@@ -64,7 +66,14 @@ router.put('/:id', auth, async (req, res) => {
     const cls = await Class.findOne({ where: { id: student.class_id, user_id: req.userId } });
     if (!cls) return res.status(403).json({ error: '无权限' });
 
-    const allowed = ['name', 'pet_type', 'pet_name', 'food_count', 'badges', 'sort_order', 'group_id'];
+    const allowed = ['name', 'pet_type', 'pet_name', 'badges', 'sort_order', 'group_id'];
+    // food_count 只允许毕业重置时传入（值为0）
+    if (req.body.food_count !== undefined) {
+      if (req.body.food_count === 0) {
+        allowed.push('food_count');
+      }
+      // 非0值不允许直接修改，必须通过 history 接口
+    }
     const updates = {};
     allowed.forEach(k => { if (req.body[k] !== undefined) updates[k] = req.body[k]; });
 
@@ -76,7 +85,7 @@ router.put('/:id', auth, async (req, res) => {
 });
 
 // 删除学生
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, requireActivated, async (req, res) => {
   try {
     const student = await Student.findByPk(req.params.id);
     if (!student) return res.status(404).json({ error: '学生不存在' });

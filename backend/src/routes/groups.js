@@ -1,9 +1,10 @@
 const router = require('express').Router();
 const { Group, Student, Class } = require('../models');
 const auth = require('../middleware/auth');
+const { requireActivated } = require('../middleware/auth');
 
 // 获取班级分组
-router.get('/class/:classId', auth, async (req, res) => {
+router.get('/class/:classId', auth, requireActivated, async (req, res) => {
   try {
     const cls = await Class.findOne({ where: { id: req.params.classId, user_id: req.userId } });
     if (!cls) return res.status(404).json({ error: '班级不存在' });
@@ -20,7 +21,7 @@ router.get('/class/:classId', auth, async (req, res) => {
 });
 
 // 创建分组
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, requireActivated, async (req, res) => {
   try {
     const { class_id, name } = req.body;
     const cls = await Class.findOne({ where: { id: class_id, user_id: req.userId } });
@@ -38,7 +39,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 // 更新分组
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, requireActivated, async (req, res) => {
   try {
     const group = await Group.findByPk(req.params.id);
     if (!group) return res.status(404).json({ error: '分组不存在' });
@@ -58,7 +59,7 @@ router.put('/:id', auth, async (req, res) => {
 });
 
 // 删除分组
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, requireActivated, async (req, res) => {
   try {
     const group = await Group.findByPk(req.params.id);
     if (!group) return res.status(404).json({ error: '分组不存在' });
