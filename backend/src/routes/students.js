@@ -30,27 +30,34 @@ router.post('/', auth, requireActivated, async (req, res) => {
     // 批量添加
     if (names && Array.isArray(names)) {
       if (names.length > 200) return res.status(400).json({ error: '单次最多添加200名学生' });
+      // 过滤非字符串元素
+      const validNames = names.filter(n => typeof n === 'string' && n.trim() && n.trim().length <= 50);
       const existing = await Student.findAll({ where: { class_id }, attributes: ['name'] });
       const existingNames = new Set(existing.map(s => s.name));
-      const count = existing.length;
+      const total = existing.length;
+      if (total + validNames.length > 500) return res.status(400).json({ error: '班级学生总数不能超过500' });
 
-      const newStudents = names
-        .filter(n => n.trim() && !existingNames.has(n.trim()))
-        .map((n, i) => ({ class_id, name: n.trim(), sort_order: count + i }));
+      const newStudents = validNames
+        .filter(n => !existingNames.has(n.trim()))
+        .map((n, i) => ({ class_id, name: n.trim(), sort_order: total + i }));
 
       const created = await Student.bulkCreate(newStudents);
       return res.json({ created: created.length, students: created });
     }
 
     // 单个添加
-    if (!name) return res.status(400).json({ error: '学生姓名不能为空' });
+    if (!name || typeof name !== 'string') return res.status(400).json({ error: '学生姓名不能为空' });
+    if (name.trim().length === 0) return res.status(400).json({ error: '学生姓名不能为空' });
     if (name.length > 50) return res.status(400).json({ error: '姓名最多50个字符' });
 
-    const dup = await Student.findOne({ where: { class_id, name } });
+    const totalCount = await Student.count({ where: { class_id } });
+    if (totalCount >= 500) return res.status(400).json({ error: '班级学生总数不能超过500' });
+
+    const dup = await Student.findOne({ where: { class_id, name: name.trim() } });
     if (dup) return res.status(400).json({ error: '该班级已有同名学生' });
 
     const count = await Student.count({ where: { class_id } });
-    const student = await Student.create({ class_id, name, sort_order: count });
+    const student = await Student.create({ class_id, name: name.trim(), sort_order: count });
     res.json(student);
   } catch (err) {
     res.status(500).json({ error: '添加失败' });
@@ -69,10 +76,9 @@ router.put('/:id', auth, requireActivated, async (req, res) => {
     const allowed = ['name', 'pet_type', 'pet_name', 'badges', 'sort_order', 'group_id'];
     // food_count 只允许毕业重置时传入（值为0）
     if (req.body.food_count !== undefined) {
-      if (req.body.food_count === 0) {
+      if (Number(req.body.food_count) === 0) {
         allowed.push('food_count');
       }
-      // 非0值不允许直接修改，必须通过 history 接口
     }
     const updates = {};
     allowed.forEach(k => { if (req.body[k] !== undefined) updates[k] = req.body[k]; });

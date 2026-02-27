@@ -32,7 +32,7 @@ const DEFAULT_RULES = [
 router.post('/register', async (req, res) => {
   try {
     const { username, password } = req.body;
-    if (!username || !password) {
+    if (!username || !password || typeof username !== 'string' || typeof password !== 'string') {
       return res.status(400).json({ error: '用户名和密码不能为空' });
     }
     if (username.length < 3 || username.length > 20) {
@@ -64,6 +64,9 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
+    if (!username || !password || typeof username !== 'string' || typeof password !== 'string') {
+      return res.status(401).json({ error: '用户名或密码错误' });
+    }
     const user = await User.findOne({ where: { username } });
     if (!user || !(await user.comparePassword(password))) {
       return res.status(401).json({ error: '用户名或密码错误' });
@@ -81,8 +84,9 @@ router.post('/login', async (req, res) => {
 
 // 卡密激活
 router.post('/activate', auth, async (req, res) => {
-  const t = await sequelize.transaction();
+  let t;
   try {
+    t = await sequelize.transaction();
     const { code } = req.body;
     if (!code) return res.status(400).json({ error: '请输入激活码' });
 
@@ -110,7 +114,7 @@ router.post('/activate', auth, async (req, res) => {
     await t.commit();
     res.json({ message: '激活成功', user: { id: req.user.id, username: req.user.username, is_activated: true } });
   } catch (err) {
-    await t.rollback();
+    if (t) await t.rollback();
     res.status(500).json({ error: '激活失败' });
   }
 });
@@ -136,7 +140,9 @@ router.post('/logout', auth, (req, res) => {
 router.put('/change-password', auth, async (req, res) => {
   try {
     const { oldPassword, newPassword } = req.body;
-    if (!oldPassword || !newPassword) return res.status(400).json({ error: '请填写完整' });
+    if (!oldPassword || !newPassword || typeof oldPassword !== 'string' || typeof newPassword !== 'string') {
+      return res.status(400).json({ error: '请填写完整' });
+    }
     if (newPassword.length < 6) return res.status(400).json({ error: '新密码至少6个字符' });
 
     const valid = await req.user.comparePassword(oldPassword);
@@ -155,6 +161,9 @@ router.post('/reset-password', async (req, res) => {
   try {
     const { username, activationCode, newPassword } = req.body;
     if (!username || !activationCode || !newPassword) return res.status(400).json({ error: '请填写完整' });
+    if (typeof newPassword !== 'string' || newPassword.length < 6) {
+      return res.status(400).json({ error: '新密码至少6个字符' });
+    }
 
     const user = await User.findOne({ where: { username, activation_code: activationCode } });
     if (!user) return res.status(400).json({ error: '用户名或激活码不匹配' });
@@ -184,6 +193,7 @@ router.put('/settings', auth, async (req, res) => {
 router.post('/verify-password', auth, async (req, res) => {
   try {
     const { password } = req.body;
+    if (!password || typeof password !== 'string') return res.json({ valid: false });
     const valid = await req.user.comparePassword(password);
     res.json({ valid });
   } catch (err) {

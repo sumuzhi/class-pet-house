@@ -1,13 +1,15 @@
 const xss = require('xss');
 
-// 递归清理对象中的字符串值
-function sanitizeValue(val) {
+// 递归清理对象中的字符串值（带深度限制）
+function sanitizeValue(val, depth = 0) {
+  if (depth > 10) return val;
   if (typeof val === 'string') return xss(val);
-  if (Array.isArray(val)) return val.map(sanitizeValue);
-  if (val && typeof val === 'object') {
+  if (Array.isArray(val)) return val.map(v => sanitizeValue(v, depth + 1));
+  if (val instanceof Date) return val;
+  if (val && typeof val === 'object' && val.constructor === Object) {
     const clean = {};
     for (const k of Object.keys(val)) {
-      clean[k] = sanitizeValue(val[k]);
+      clean[k] = sanitizeValue(val[k], depth + 1);
     }
     return clean;
   }
