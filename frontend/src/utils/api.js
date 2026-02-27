@@ -16,11 +16,15 @@ api.interceptors.request.use(config => {
 api.interceptors.response.use(
   res => res.data,
   err => {
-    if (err.response?.status === 401) {
+    const status = err.response?.status
+    const data = err.response?.data
+    if (status === 401) {
       localStorage.removeItem('token')
       window.location.href = '/login'
+    } else if (status === 403 && data?.status === 'not_activated') {
+      window.location.href = '/activate'
     }
-    return Promise.reject(err.response?.data || err)
+    return Promise.reject(data || err)
   }
 )
 

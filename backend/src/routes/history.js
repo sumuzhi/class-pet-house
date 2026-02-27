@@ -8,9 +8,12 @@ router.get('/class/:classId', auth, async (req, res) => {
     const cls = await Class.findOne({ where: { id: req.params.classId, user_id: req.userId } });
     if (!cls) return res.status(404).json({ error: '班级不存在' });
 
-    const { limit = 50, offset = 0 } = req.query;
+    const { limit = 50, offset = 0, student_id } = req.query;
+    const where = { class_id: cls.id };
+    if (student_id) where.student_id = student_id;
+
     const history = await History.findAndCountAll({
-      where: { class_id: cls.id },
+      where,
       include: [{ model: Student, as: 'Student', attributes: ['id', 'name'] }],
       order: [['created_at', 'DESC']],
       limit: parseInt(limit),
@@ -39,7 +42,7 @@ router.post('/', auth, async (req, res) => {
       const student = await Student.findOne({ where: { id: sid, class_id } });
       if (!student) continue;
 
-      await student.update({ food_count: student.food_count + rule.value });
+      await student.update({ food_count: Math.max(0, student.food_count + rule.value) });
       const record = await History.create({
         class_id, student_id: sid,
         rule_id: rule.id, rule_name: rule.name,
@@ -110,6 +113,14 @@ router.post('/batch-delete', auth, async (req, res) => {
   try {
     const { record_ids } = req.body;
     if (!Array.isArray(record_ids)) return res.status(400).json({ error: '参数错误' });
+
+    // 权限校验：只删除属于当前用户班级的记录
+    const records = await History.findAll({ where: { id: record_ids } });
+    const classIds = [...new Set(records.map(r => r.class_id))];
+    for (const cid of classIds) {
+      const cls = await Class.findOne({ where: { id: cid, user_id: req.userId } });
+      if (!cls) return res.status(403).json({ error: '无权限删除其他用户的记录' });
+    }
 
     await History.destroy({ where: { id: record_ids } });
     res.json({ message: '删除成功' });

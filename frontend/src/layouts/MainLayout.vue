@@ -15,7 +15,7 @@
         <!-- 中间：搜索框（移动端也显示） -->
         <div class="flex items-center">
           <input v-model="searchQuery" type="text" placeholder="🔍 搜索学生..."
-            class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm focus:border-pink-300 outline-none w-32 md:w-48" />
+            class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm focus:border-accent outline-none w-32 md:w-48" />
         </div>
 
         <!-- 右侧：功能按钮 -->

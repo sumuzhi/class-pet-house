@@ -95,6 +95,10 @@ router.post('/exchange', auth, async (req, res) => {
       return res.status(400).json({ error: '徽章不足' });
     }
 
+    // 扣减徽章（从最早的开始扣）
+    const remainingBadges = badges.slice(item.price);
+    await student.update({ badges: remainingBadges });
+
     // 扣减库存
     if (item.stock > 0) {
       await item.update({ stock: item.stock - 1 });

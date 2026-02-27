@@ -24,17 +24,18 @@ const scoreRuleRoutes = require('./routes/scoreRules');
 const exportRoutes = require('./routes/export');
 const adminRoutes = require('./routes/admin');
 const { router: syncRouter } = require('./routes/sync');
+const { requireActivated } = require('./middleware/auth');
 
 app.use('/api/auth', authRoutes);
-app.use('/api/classes', classRoutes);
-app.use('/api/students', studentRoutes);
-app.use('/api/groups', groupRoutes);
-app.use('/api/history', historyRoutes);
-app.use('/api/shop', shopRoutes);
-app.use('/api/score-rules', scoreRuleRoutes);
-app.use('/api/export', exportRoutes);
+app.use('/api/classes', requireActivated, classRoutes);
+app.use('/api/students', requireActivated, studentRoutes);
+app.use('/api/groups', requireActivated, groupRoutes);
+app.use('/api/history', requireActivated, historyRoutes);
+app.use('/api/shop', requireActivated, shopRoutes);
+app.use('/api/score-rules', requireActivated, scoreRuleRoutes);
+app.use('/api/export', requireActivated, exportRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/sync', syncRouter);
+app.use('/api/sync', requireActivated, syncRouter);
 
 // 健康检查
 app.get('/api/health', (req, res) => {

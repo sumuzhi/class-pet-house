@@ -5,7 +5,7 @@ const { User, Class, ScoreRule, License } = require('../models');
 const auth = require('../middleware/auth');
 
 const generateToken = (user) => {
-  return jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+  return jwt.sign({ id: user.id }, process.env.JWT_SECRET || 'class-pet-house-secret', {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d'
   });
 };
