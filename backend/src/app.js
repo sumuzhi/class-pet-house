@@ -21,6 +21,7 @@ const groupRoutes = require('./routes/groups');
 const historyRoutes = require('./routes/history');
 const shopRoutes = require('./routes/shop');
 const scoreRuleRoutes = require('./routes/scoreRules');
+const exportRoutes = require('./routes/export');
 const { router: syncRouter } = require('./routes/sync');
 
 app.use('/api/auth', authRoutes);
@@ -30,6 +31,7 @@ app.use('/api/groups', groupRoutes);
 app.use('/api/history', historyRoutes);
 app.use('/api/shop', shopRoutes);
 app.use('/api/score-rules', scoreRuleRoutes);
+app.use('/api/export', exportRoutes);
 app.use('/api/sync', syncRouter);
 
 // 健康检查
