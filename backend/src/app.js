@@ -24,7 +24,9 @@ app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/reset-password', authLimiter);
 
 // 静态文件（宠物图片）
-app.use('/动物图片', express.static(path.join(__dirname, '../../assets/pets')));
+const petImagesStatic = express.static(path.join(__dirname, '../../assets/pets'));
+app.use('/pet-images', petImagesStatic);
+app.use('/动物图片', petImagesStatic);
 
 // API 路由
 const authRoutes = require('./routes/auth');

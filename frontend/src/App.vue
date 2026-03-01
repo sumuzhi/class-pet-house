@@ -1,5 +1,7 @@
 <template>
-  <router-view />
+  <div class="w-full max-w-[100vw] overflow-x-hidden">
+    <router-view />
+  </div>
 </template>
 
 <script setup>

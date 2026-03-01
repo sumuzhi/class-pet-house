@@ -141,6 +141,7 @@ import api from '../utils/api'
 import BatchAddModal from '../components/BatchAddModal.vue'
 import { useTheme } from '../composables/useTheme'
 import { PETS } from '../utils/pets'
+import Dialog from '../utils/dialog'
 
 const router = useRouter()
 const classStore = useClassStore()
@@ -188,32 +189,32 @@ async function addStudent() {
     })
     newStudentName.value = ''
     await classStore.fetchStudents()
-  } catch (err) { alert(err.error || '添加失败') }
+  } catch (err) { Dialog.alert(err.error || '添加失败') }
 }
 
 async function editStudent(s) {
-  const name = prompt('修改学生姓名', s.name)
+  const name = await Dialog.prompt('修改学生姓名', s.name)
   if (!name || name === s.name) return
   try {
     await api.put(`/students/${s.id}`, { name })
     await classStore.fetchStudents()
-  } catch (err) { alert(err.error || '修改失败') }
+  } catch (err) { Dialog.alert(err.error || '修改失败') }
 }
 
 async function deleteStudent(s) {
-  if (!confirm(`确定删除"${s.name}"？`)) return
+  if (!(await Dialog.confirm(`确定删除"${s.name}"？`))) return
   try {
     await api.delete(`/students/${s.id}`)
     await classStore.fetchStudents()
-  } catch (err) { alert(err.error || '删除失败') }
+  } catch (err) { Dialog.alert(err.error || '删除失败') }
 }
 
 async function deleteRule(r) {
-  if (!confirm(`确定删除"${r.name}"？`)) return
+  if (!(await Dialog.confirm(`确定删除"${r.name}"？`))) return
   try {
     await api.delete(`/score-rules/${r.id}`)
     rules.value = rules.value.filter(x => x.id !== r.id)
-  } catch (err) { alert(err.error || '删除失败') }
+  } catch (err) { Dialog.alert(err.error || '删除失败') }
 }
 
 async function addRule() {
@@ -227,18 +228,18 @@ async function addRule() {
     })
     rules.value.push(rule)
     newRule.value = { name: '', icon: '⭐', value: 1 }
-  } catch (err) { alert(err.error || '添加失败') }
+  } catch (err) { Dialog.alert(err.error || '添加失败') }
 }
 
 async function changePassword() {
-  const oldPwd = prompt('请输入旧密码')
+  const oldPwd = await Dialog.prompt('请输入旧密码')
   if (!oldPwd) return
-  const newPwd = prompt('请输入新密码（至少6位）')
+  const newPwd = await Dialog.prompt('请输入新密码（至少6位）')
   if (!newPwd) return
   try {
     await api.put('/auth/change-password', { oldPassword: oldPwd, newPassword: newPwd })
-    alert('密码修改成功')
-  } catch (err) { alert(err.error || '修改失败') }
+    Dialog.alert('密码修改成功')
+  } catch (err) { Dialog.alert(err.error || '修改失败') }
 }
 
 function handleLogout() {
@@ -260,8 +261,8 @@ async function saveSettings() {
     }
     await api.put(`/classes/${classStore.currentClass.id}`, updateData)
     await classStore.fetchClasses()
-    alert('设置已保存')
-  } catch (err) { alert(err.error || '保存失败') }
+    Dialog.alert('设置已保存')
+  } catch (err) { Dialog.alert(err.error || '保存失败') }
 }
 
 async function randomAssignPets() {

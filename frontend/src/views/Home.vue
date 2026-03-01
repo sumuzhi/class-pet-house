@@ -1,20 +1,27 @@
 <template>
   <div>
     <!-- 排序切换 -->
-    <div class="flex items-center justify-between mb-4">
-      <span class="text-sm text-gray-400">共 {{ filteredStudents.length }} 名学生</span>
-      <select v-model="sortMode" class="text-sm border rounded-lg px-2 py-1 text-gray-500 outline-none">
-        <option value="manual">手动排序</option>
-        <option value="name">姓名排序</option>
-        <option value="food">排行榜排序</option>
-        <option value="progress">进度排序</option>
-      </select>
+    <div class="flex items-center justify-between mb-4 px-1">
+      <span class="text-sm font-bold text-slate-400">共 <span class="text-slate-600"><OdometerNumber :value="filteredStudents.length" /></span> 名学生</span>
+      <div class="relative">
+        <select v-model="sortMode" class="appearance-none bg-white/80 border border-slate-200/80 shadow-sm rounded-full pl-4 pr-8 py-1.5 text-sm font-bold text-slate-600 outline-none focus:border-accent transition-colors cursor-pointer hover:bg-white">
+          <option value="manual">手动排序</option>
+          <option value="name">姓名排序</option>
+          <option value="food">排行榜排序</option>
+          <option value="progress">进度排序</option>
+        </select>
+        <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[10px] text-slate-400">
+          ▼
+        </div>
+      </div>
     </div>
 
     <!-- 学生卡片网格 -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-3 gap-y-6 sm:gap-x-6 sm:gap-y-10 px-3 sm:px-0 py-2">
       <StudentCard
-        v-for="s in filteredStudents" :key="s.id"
+        v-for="(s, index) in filteredStudents" :key="s.id"
+        class="animate-stagger-fade-in"
+        :style="{ animationDelay: `${index * 0.04}s` }"
         :student="s"
         :batch-mode="batchMode"
         :undo-mode="undoMode"
@@ -75,7 +82,9 @@ import ScoreRuleModal from '../components/ScoreRuleModal.vue'
 import PetSelectModal from '../components/PetSelectModal.vue'
 import GraduateModal from '../components/GraduateModal.vue'
 import BadgeWall from '../components/BadgeWall.vue'
+import OdometerNumber from '../components/OdometerNumber.vue'
 import api from '../utils/api'
+import Dialog from '../utils/dialog'
 
 const props = defineProps({
   searchQuery: String,
@@ -151,7 +160,7 @@ async function revokeLastAction(student) {
       await classStore.fetchStudents()
     }
   } catch (err) {
-    alert('撤回失败')
+    Dialog.alert('撤回失败')
   }
 }
 

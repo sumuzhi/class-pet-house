@@ -33,6 +33,7 @@ import { useClassStore } from '../stores/class'
 import { useEscClose } from '../composables/useEscClose'
 import { PETS } from '../utils/pets'
 import api from '../utils/api'
+import Dialog from '../utils/dialog'
 
 const props = defineProps({ student: Object })
 const emit = defineEmits(['close', 'graduated'])
@@ -43,7 +44,7 @@ const loading = ref(false)
 const petImage = computed(() => {
   const pet = PETS.find(p => p.id === props.student.pet_type)
   if (!pet) return ''
-  return `/动物图片/${pet.folder}/10.webp`
+  return `/pet-images/${pet.folder}/10.webp`
 })
 
 async function handleGraduate() {
@@ -68,7 +69,7 @@ async function handleGraduate() {
     }).catch(() => {})
     emit('graduated')
   } catch (err) {
-    alert(err.error || '操作失败')
+    Dialog.alert(err.error || '操作失败')
   } finally {
     loading.value = false
   }

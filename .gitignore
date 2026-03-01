@@ -3,3 +3,8 @@ node_modules/
 dist/
 .DS_Store
 *.log
+.agents/
+.vscode/settings.json
+localhost.session.sql
+package-lock.json
+.npmrc

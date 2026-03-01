@@ -34,6 +34,7 @@
 import { ref } from 'vue'
 import { useClassStore } from '../stores/class'
 import api from '../utils/api'
+import Dialog from '../utils/dialog'
 
 const emit = defineEmits(['close'])
 const classStore = useClassStore()
@@ -46,7 +47,7 @@ async function switchTo(cls) {
   try {
     await classStore.switchClass(cls)
     emit('close')
-  } catch (err) { alert(err.error || '切换失败') }
+  } catch (err) { Dialog.alert(err.error || '切换失败') }
 }
 
 async function createClass() {
@@ -55,25 +56,25 @@ async function createClass() {
     await api.post('/classes', { name: newName.value.trim() })
     newName.value = ''
     await classStore.fetchClasses()
-  } catch (err) { alert(err.error || '创建失败') }
+  } catch (err) { Dialog.alert(err.error || '创建失败') }
 }
 
 async function editClass(cls) {
-  const name = prompt('修改班级名称', cls.name)
+  const name = await Dialog.prompt('修改班级名称', cls.name)
   if (!name || name === cls.name) return
   try {
     await api.put(`/classes/${cls.id}`, { name })
     await classStore.fetchClasses()
-  } catch (err) { alert(err.error || '修改失败') }
+  } catch (err) { Dialog.alert(err.error || '修改失败') }
 }
 
 async function deleteClass(cls) {
-  if (!confirm(`确定删除"${cls.name}"？所有数据将丢失！`)) return
+  if (!(await Dialog.confirm(`确定删除"${cls.name}"？所有数据将丢失！`))) return
   try {
     await api.delete(`/classes/${cls.id}`)
     await classStore.fetchClasses()
   } catch (err) {
-    alert(err.error || '删除失败')
+    Dialog.alert(err.error || '删除失败')
   }
 }
 </script>

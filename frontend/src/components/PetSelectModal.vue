@@ -6,7 +6,7 @@
 
       <!-- 起名输入框 -->
       <div v-if="selectedPet" class="mb-4 text-center">
-        <img :src="`/动物图片/${selectedPet.folder}/1.webp`" class="w-20 h-20 mx-auto object-contain mb-2" />
+        <img :src="`/pet-images/${selectedPet.folder}/1.webp`" class="w-20 h-20 mx-auto object-contain mb-2" />
         <p class="text-sm text-gray-600 mb-2">已选：{{ selectedPet.name }}</p>
         <input v-model="petName" type="text" :placeholder="`给${selectedPet.name}起个名字（可选）`"
           maxlength="20" @keyup.enter="confirmSelect"
@@ -24,7 +24,7 @@
         <button v-for="pet in pets" :key="pet.id"
           @click="selectedPet = pet"
           class="flex flex-col items-center p-2 rounded-xl border border-gray-100 hover:border-accent hover:bg-theme-light transition active:scale-95">
-          <img :src="`/动物图片/${pet.folder}/1.webp`" :alt="pet.name" class="w-14 h-14 object-contain" />
+          <img :src="`/pet-images/${pet.folder}/1.webp`" :alt="pet.name" class="w-14 h-14 object-contain" />
           <span class="text-xs text-gray-600 mt-1">{{ pet.name }}</span>
         </button>
       </div>
@@ -37,6 +37,7 @@ import { ref } from 'vue'
 import { useEscClose } from '../composables/useEscClose'
 import { PETS } from '../utils/pets'
 import api from '../utils/api'
+import Dialog from '../utils/dialog'
 
 const props = defineProps({ student: Object })
 const emit = defineEmits(['close', 'selected'])
@@ -54,7 +55,7 @@ async function confirmSelect() {
     })
     emit('selected')
   } catch (err) {
-    alert(err.error || '选择失败')
+    Dialog.alert(err.error || '选择失败')
   }
 }
 </script>

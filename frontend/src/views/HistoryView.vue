@@ -12,7 +12,7 @@
             <span class="font-medium">{{ h.Student?.name || '未知' }}</span>
             {{ h.rule_name || h.type }}
           </p>
-          <p class="text-xs text-gray-400">{{ formatTime(h.created_at) }}</p>
+          <p class="text-xs text-gray-400">{{ formatTime(h.createdAt) }}</p>
         </div>
         <span class="text-sm font-bold" :class="h.value > 0 ? 'text-green-500' : 'text-red-500'">
           {{ h.value > 0 ? '+' : '' }}{{ h.value }}
@@ -31,7 +31,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 import { useClassStore } from '../stores/class'
 import api from '../utils/api'
 
@@ -41,7 +41,12 @@ const hasMore = ref(false)
 const offset = ref(0)
 const limit = 50
 
-onMounted(() => loadHistory())
+watch(() => classStore.currentClass, (newClass) => {
+  if (newClass) {
+    offset.value = 0
+    loadHistory()
+  }
+}, { immediate: true })
 
 async function loadHistory() {
   if (!classStore.currentClass) return
@@ -66,6 +71,15 @@ async function loadMore() {
 }
 
 function formatTime(t) {
-  return new Date(t).toLocaleString('zh-CN')
+  if (!t) return ''
+  try {
+    const d = new Date(t)
+    if (isNaN(d.getTime())) return ''
+    return d.toLocaleString('zh-CN', {
+      month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+    }).replace(/\//g, '-')
+  } catch (e) {
+    return ''
+  }
 }
 </script>

@@ -3,21 +3,32 @@
     <h2 class="text-xl font-bold text-gray-700 mb-4">🛍️ 小卖部</h2>
 
     <!-- 商品列表 -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
-      <div v-for="item in items" :key="item.id"
-        class="bg-white rounded-2xl p-4 shadow-sm text-center">
-        <span class="text-3xl">{{ item.icon }}</span>
-        <p class="text-sm font-medium text-gray-700 mt-2">{{ item.name }}</p>
-        <p class="text-xs text-gray-400">{{ item.description }}</p>
-        <p class="text-sm text-accent font-bold mt-1">🏅 {{ item.price }}</p>
-        <p v-if="item.stock >= 0" class="text-xs text-gray-400">库存: {{ item.stock }}</p>
-        <div class="flex gap-1 justify-center mt-2">
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
+      <div v-for="(item, i) in items" :key="item.id"
+        class="group bg-white/90 backdrop-blur-md rounded-[1.8rem] p-5 shadow-sm text-center border-2 border-white hover:border-[var(--theme-ring)]/40 hover:shadow-[0_15px_35px_-10px_var(--theme-ring)] hover:-translate-y-1 transition-all duration-300 animate-stagger-fade-in flex flex-col items-center"
+        :style="{ animationDelay: `${i * 0.05}s` }">
+        
+        <!-- Icon Squircle -->
+        <div class="w-16 h-16 rounded-[1.2rem] bg-slate-50 flex items-center justify-center text-4xl mb-3 shadow-inner group-hover:scale-110 transition-transform duration-300 group-hover:bg-theme-light">
+          {{ item.icon }}
+        </div>
+        
+        <p class="text-base font-black text-slate-700 tracking-wide">{{ item.name }}</p>
+        <p class="text-xs font-bold text-slate-400 mt-1 h-8 line-clamp-2">{{ item.description }}</p>
+        
+        <div class="mt-3 px-3 py-1 rounded-full bg-orange-50 text-orange-600 font-black text-sm border border-orange-100 flex items-center gap-1">
+          <span class="text-[12px]">🏅</span> {{ item.price }}
+        </div>
+        
+        <p v-if="item.stock >= 0" class="text-[10px] font-bold text-slate-400 mt-2 bg-slate-100 px-2 py-0.5 rounded-full">剩余: {{ item.stock }}</p>
+        
+        <div class="flex gap-2 justify-center mt-4 w-full">
           <button @click="openExchange(item)"
-            class="px-3 py-1 bg-accent text-white rounded-lg text-xs bg-accent-hover transition">
+            class="flex-1 py-2 bg-accent text-white rounded-xl text-sm font-black shadow-md shadow-accent/30 hover:scale-[1.05] active:scale-95 transition-all">
             兑换
           </button>
           <button @click="deleteItem(item)"
-            class="px-2 py-1 bg-gray-100 text-gray-400 rounded-lg text-xs hover:text-red-500 transition">
+            class="w-10 h-10 flex items-center justify-center bg-slate-100 text-slate-400 rounded-xl hover:bg-red-50 hover:text-red-500 hover:scale-[1.05] transition-all">
             🗑️
           </button>
         </div>
@@ -46,15 +57,15 @@
     </div>
 
     <!-- 商品管理 -->
-    <div class="bg-white rounded-2xl p-5 shadow-sm mb-6">
-      <h3 class="font-bold text-gray-700 mb-3">商品管理</h3>
-      <div class="flex gap-2">
+    <div class="bg-white/90 backdrop-blur-md rounded-[2rem] p-6 shadow-sm border-2 border-white mb-6">
+      <h3 class="font-black text-slate-700 mb-4 text-lg">⚙️ 商品管理</h3>
+      <div class="flex flex-col sm:flex-row gap-3">
         <input v-model="newItem.name" placeholder="商品名称"
-          class="flex-1 px-3 py-2 rounded-lg border text-sm outline-none" />
-        <input v-model.number="newItem.price" type="number" placeholder="价格" min="1"
-          class="w-20 px-3 py-2 rounded-lg border text-sm outline-none" />
+          class="flex-1 px-4 py-3 rounded-2xl border-2 border-slate-100 text-sm font-bold text-slate-600 outline-none focus:border-accent focus:bg-white transition-colors bg-slate-50" />
+        <input v-model.number="newItem.price" type="number" placeholder="价格(徽章)" min="1"
+          class="w-full sm:w-32 px-4 py-3 rounded-2xl border-2 border-slate-100 text-sm font-bold text-slate-600 outline-none focus:border-accent focus:bg-white transition-colors bg-slate-50" />
         <button @click="addItem"
-          class="px-4 py-2 bg-accent text-white rounded-lg text-sm">➕ 添加</button>
+          class="px-6 py-3 bg-slate-800 text-white font-black rounded-2xl text-sm hover:bg-slate-700 hover:shadow-lg border-2 border-slate-800 hover:-translate-y-0.5 transition-all active:scale-95 whitespace-nowrap">➕ 添加商品</button>
       </div>
     </div>
 
@@ -64,7 +75,7 @@
       <div v-for="r in records" :key="r.id"
         class="flex items-center justify-between p-2 border-b border-gray-50 text-sm">
         <span>{{ r.Student?.name }} 兑换了 {{ r.item_name }}</span>
-        <span class="text-xs text-gray-400">{{ formatTime(r.created_at) }}</span>
+        <span class="text-xs text-gray-400">{{ formatTime(r.createdAt) }}</span>
       </div>
       <p v-if="!records.length" class="text-center text-gray-400 text-sm py-4">暂无记录</p>
     </div>
@@ -72,9 +83,10 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, watch } from 'vue'
 import { useClassStore } from '../stores/class'
 import api from '../utils/api'
+import Dialog from '../utils/dialog'
 
 const classStore = useClassStore()
 const items = ref([])
@@ -88,14 +100,14 @@ function onEsc(e) { if (e.key === 'Escape') showExchangeModal.value = false }
 onMounted(() => window.addEventListener('keydown', onEsc))
 onUnmounted(() => window.removeEventListener('keydown', onEsc))
 
-onMounted(async () => {
-  if (!classStore.currentClass) return
+watch(() => classStore.currentClass, async (newClass) => {
+  if (!newClass) return
   try {
-    const cid = classStore.currentClass.id
+    const cid = newClass.id
     items.value = await api.get(`/shop/class/${cid}`)
     records.value = await api.get(`/shop/exchange/${cid}`)
   } catch {}
-})
+}, { immediate: true })
 
 async function addItem() {
   if (!newItem.name) return
@@ -108,7 +120,7 @@ async function addItem() {
     items.value.push(item)
     newItem.name = ''
     newItem.price = 1
-  } catch (err) { alert(err.error || '添加失败') }
+  } catch (err) { Dialog.alert(err.error || '添加失败') }
 }
 
 function openExchange(item) {
@@ -117,11 +129,11 @@ function openExchange(item) {
 }
 
 async function deleteItem(item) {
-  if (!confirm(`确定删除「${item.name}」？`)) return
+  if (!(await Dialog.confirm(`确定删除「${item.name}」？`))) return
   try {
     await api.delete(`/shop/${item.id}`)
     items.value = items.value.filter(i => i.id !== item.id)
-  } catch (err) { alert(err.error || '删除失败') }
+  } catch (err) { Dialog.alert(err.error || '删除失败') }
 }
 
 async function confirmExchange(student) {
@@ -132,7 +144,7 @@ async function confirmExchange(student) {
       item_id: exchangeTarget.value.id
     })
     showExchangeModal.value = false
-    alert('兑换成功！')
+    Dialog.alert('兑换成功！')
     // 刷新商品列表（库存变化）、兑换记录、学生数据（徽章变化）
     const cid = classStore.currentClass.id
     await Promise.all([
@@ -140,10 +152,19 @@ async function confirmExchange(student) {
       api.get(`/shop/exchange/${cid}`).then(d => records.value = d),
       classStore.fetchStudents()
     ])
-  } catch (err) { alert(err.error || '兑换失败') }
+  } catch (err) { Dialog.alert(err.error || '兑换失败') }
 }
 
 function formatTime(t) {
-  return new Date(t).toLocaleString('zh-CN')
+  if (!t) return ''
+  try {
+    const d = new Date(t)
+    if (isNaN(d.getTime())) return ''
+    return d.toLocaleString('zh-CN', {
+      month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+    }).replace(/\//g, '-')
+  } catch (e) {
+    return ''
+  }
 }
 </script>

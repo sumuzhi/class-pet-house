@@ -24,6 +24,7 @@ import { ref } from 'vue'
 import { useClassStore } from '../stores/class'
 import { useEscClose } from '../composables/useEscClose'
 import api from '../utils/api'
+import Dialog from '../utils/dialog'
 
 const emit = defineEmits(['close', 'added'])
 useEscClose(emit)
@@ -43,7 +44,7 @@ async function handleAdd() {
     await classStore.fetchStudents()
     emit('added')
   } catch (err) {
-    alert(err.error || '添加失败')
+    Dialog.alert(err.error || '添加失败')
   } finally {
     loading.value = false
   }

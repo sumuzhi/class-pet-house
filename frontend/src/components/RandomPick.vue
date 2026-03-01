@@ -5,7 +5,7 @@
       <h2 class="text-lg font-bold text-gray-700 mb-4">🎲 随机点名</h2>
 
       <!-- 滚动动画 -->
-      <div class="relative h-32 flex items-center justify-center overflow-hidden mb-4">
+      <div class="relative h-44 flex items-center justify-center overflow-hidden mb-4">
         <div v-if="rolling" class="text-4xl font-bold text-accent animate-pulse">
           {{ currentName }}
         </div>
@@ -82,7 +82,7 @@ const available = computed(() => {
 const petImage = computed(() => {
   if (!result.value?.pet_type) return ''
   const pet = PETS.find(p => p.id === result.value.pet_type)
-  return pet ? `/动物图片/${pet.folder}/1.webp` : ''
+  return pet ? `/pet-images/${pet.folder}/1.webp` : ''
 })
 
 function startRoll() {
