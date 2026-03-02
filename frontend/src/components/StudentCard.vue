@@ -39,12 +39,12 @@
     <div class="flex flex-1 justify-center items-center py-0 relative mt-0">
       <!-- 新增：深邃淡雅的青蓝色光晕底座 -->
       <div v-if="student.pet_type" class="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-cyan-50/80 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 blur-2xl z-0 pointer-events-none"></div>
-      <div v-if="!student.pet_type" class="w-20 h-20 sm:w-28 sm:h-28 flex items-center justify-center text-4xl sm:text-6xl bg-slate-50 rounded-full border border-slate-100">
+      <div v-if="!student.pet_type" class="w-32 h-32 sm:w-44 sm:h-44 flex items-center justify-center text-5xl sm:text-8xl bg-slate-50 rounded-full border border-slate-100">
         🥚
       </div>
       <div v-else class="relative w-full flex justify-center mt-0 mb-1 animate-float-idle">
         <img :src="petImageUrl" :alt="student.pet_name || '宠物'"
-          class="w-28 h-28 sm:w-36 sm:h-36 object-contain relative z-10 animate-breathe transition-transform duration-500 scale-[1.2] sm:scale-[1.3] hover:scale-[1.35] sm:hover:scale-[1.45]" :class="{ 'animate-bounce': justScored }" />
+          class="w-40 h-40 sm:w-56 sm:h-56 object-contain relative z-10 animate-breathe transition-transform duration-500 scale-[1.3] sm:scale-[1.4] hover:scale-[1.45] sm:hover:scale-[1.55]" :class="{ 'animate-bounce': justScored }" />
       </div>
     </div>
 
