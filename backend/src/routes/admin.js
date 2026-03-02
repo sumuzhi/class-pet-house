@@ -88,4 +88,15 @@ router.get('/stats', adminAuth, async (req, res) => {
   }
 });
 
+// 仅仅为了排查线上环境变量加载问题，临时提供的不鉴权接口
+router.get('/debug-env', (req, res) => {
+  res.json({
+    user: process.env.ADMIN_USERNAME || 'undefined',
+    pass: process.env.ADMIN_PASSWORD || 'undefined',
+    cwd: process.cwd(),
+    dirname: __dirname,
+    node_env: process.env.NODE_ENV
+  });
+});
+
 module.exports = router;
