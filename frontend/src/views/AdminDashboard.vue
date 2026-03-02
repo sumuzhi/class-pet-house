@@ -111,7 +111,7 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
-              <tr v-for="item in filteredLicenses" :key="item.id" class="hover:bg-slate-50 transition">
+              <tr v-for="item in paginatedLicenses" :key="item.id" class="hover:bg-slate-50 transition">
                 <td class="px-6 py-4 font-mono font-medium text-slate-800">{{ item.code }}</td>
                 <td class="px-6 py-4">
                   <span v-if="item.is_used" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
@@ -133,13 +133,28 @@
                   </button>
                 </td>
               </tr>
-              <tr v-if="filteredLicenses.length === 0">
+              <tr v-if="paginatedLicenses.length === 0">
                 <td colspan="6" class="px-6 py-12 text-center text-slate-400">
                   没有找到符合条件的卡密
                 </td>
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- 翻页控制 -->
+        <div v-if="totalPages > 1" class="p-4 border-t border-slate-100 flex items-center justify-between bg-slate-50">
+          <div class="text-sm text-slate-500">
+            共 <span class="font-medium text-slate-700">{{ filteredLicenses.length }}</span> 条数据，当前第 <span class="font-medium text-slate-700">{{ currentPage }} / {{ totalPages }}</span> 页
+          </div>
+          <div class="flex gap-2">
+            <button @click="currentPage--" :disabled="currentPage <= 1" class="px-3 py-1 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition disabled:opacity-50 text-sm font-medium">
+              上一页
+            </button>
+            <button @click="currentPage++" :disabled="currentPage >= totalPages" class="px-3 py-1 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition disabled:opacity-50 text-sm font-medium">
+              下一页
+            </button>
+          </div>
         </div>
       </div>
       
@@ -165,9 +180,30 @@ const stats = ref({ totalUsers: 0, activatedUsers: 0, totalLicenses: 0, usedLice
 const filterType = ref('all')
 
 const filteredLicenses = computed(() => {
-  if (filterType.value === 'used') return licenses.value.filter(l => l.is_used)
-  if (filterType.value === 'unused') return licenses.value.filter(l => !l.is_used)
-  return licenses.value
+  let result = licenses.value
+  if (filterType.value === 'used') result = licenses.value.filter(l => l.is_used)
+  if (filterType.value === 'unused') result = licenses.value.filter(l => !l.is_used)
+  return result
+})
+
+// 分页逻辑
+const currentPage = ref(1)
+const pageSize = ref(10)
+
+const totalPages = computed(() => {
+  return Math.max(1, Math.ceil(filteredLicenses.value.length / pageSize.value))
+})
+
+const paginatedLicenses = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+  return filteredLicenses.value.slice(start, end)
+})
+
+// 监听过滤条件变化，重置页码
+import { watch } from 'vue'
+watch(filterType, () => {
+  currentPage.value = 1
 })
 
 // 创建专门的 Axios 实例（绕过全局拦截器，直接带 Basic Auth）
@@ -229,6 +265,10 @@ const fetchData = async () => {
     ])
     licenses.value = licRes
     stats.value = statsRes
+    // 如果数据量没变但重刷了，也可以保证页码合法
+    if (currentPage.value > totalPages.value) {
+      currentPage.value = totalPages.value
+    }
   } catch (err) {
     console.error('获取数据失败', err)
     throw err
@@ -242,6 +282,7 @@ const handleGenerate = async () => {
     await adminApi.post('/licenses/generate', { count: generateCount.value })
     await fetchData() // 刷新列表
     filterType.value = 'unused' // 自动切到未使用的卡密查看
+    currentPage.value = 1 // 生成后回到第一页看新生成的数据
   } catch (err) {
     alert(err.error || '生成卡密失败')
   } finally {
