@@ -61,7 +61,7 @@ if (process.env.NODE_ENV === 'production') {
   const frontendDist = path.join(__dirname, '../../frontend/dist');
   app.use(express.static(frontendDist));
   // SPA fallback：所有非API请求返回index.html
-  app.get('*', (req, res) => {
+  app.get(/(.*)/, (req, res) => {
     if (!req.path.startsWith('/api/')) {
       res.sendFile(path.join(frontendDist, 'index.html'));
     }
