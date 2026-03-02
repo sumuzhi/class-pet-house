@@ -16,7 +16,6 @@ onMounted(async () => {
   if (auth.token) {
     try {
       await auth.fetchUser()
-      if (!auth.isActivated) router.push('/activate')
     } catch {
       auth.logout()
       router.push('/login')

@@ -28,35 +28,68 @@ const DEFAULT_RULES = [
   { name: '损坏公物', icon: '💔', value: -3 }
 ];
 
-// 注册
+// 注册与激活合并
 router.post('/register', async (req, res) => {
+  let t;
   try {
-    const { username, password } = req.body;
-    if (!username || !password || typeof username !== 'string' || typeof password !== 'string') {
-      return res.status(400).json({ error: '用户名和密码不能为空' });
+    const { username, password, activationCode } = req.body;
+
+    // 基础校验
+    if (!username || !password || !activationCode ||
+      typeof username !== 'string' || typeof password !== 'string' || typeof activationCode !== 'string') {
+      return res.status(400).json({ error: '用户名、密码和激活码不能为空' });
     }
     if (username.length < 3 || username.length > 20) {
-      return res.status(400).json({ error: '用户名长度3-20个字符' });
+      return res.status(400).json({ error: '用户名长度需为3-20个字符' });
     }
     if (password.length < 6) {
       return res.status(400).json({ error: '密码至少6个字符' });
     }
 
-    const existing = await User.findOne({ where: { username } });
+    t = await sequelize.transaction();
+
+    // 检查激活码
+    const license = await License.findOne({ where: { code: activationCode, is_used: false }, transaction: t });
+    if (!license) {
+      await t.rollback();
+      return res.status(400).json({ error: '激活码无效或已被使用' });
+    }
+
+    // 检查是否重名
+    const existing = await User.findOne({ where: { username }, transaction: t });
     if (existing) {
+      await t.rollback();
       return res.status(400).json({ error: '用户名已存在' });
     }
 
-    const user = await User.create({ username, password_hash: password });
+    // 创建用户并直接标为已激活
+    const user = await User.create({
+      username,
+      password_hash: password,
+      activation_code: activationCode,
+      is_activated: true
+    }, { transaction: t });
+
+    // 绑定消耗激活码
+    await license.update({ is_used: true, used_by: user.id, used_at: new Date() }, { transaction: t });
+
+    // 自动为新用户创建默认班级和积分规则
+    const cls = await Class.create({ user_id: user.id, name: '默认班级' }, { transaction: t });
+    for (let i = 0; i < DEFAULT_RULES.length; i++) {
+      await ScoreRule.create({ class_id: cls.id, ...DEFAULT_RULES[i], sort_order: i }, { transaction: t });
+    }
+
+    await t.commit();
     const token = generateToken(user);
 
     res.json({
       token,
-      user: { id: user.id, username: user.username, is_activated: false },
-      status: 'not_activated'
+      user: { id: user.id, username: user.username, is_activated: true },
+      status: 'authenticated'
     });
   } catch (err) {
-    res.status(500).json({ error: '注册失败' });
+    if (t) await t.rollback();
+    res.status(500).json({ error: '注册激活失败' });
   }
 });
 

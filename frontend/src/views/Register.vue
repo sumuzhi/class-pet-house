@@ -19,8 +19,13 @@
         </div>
         <div>
           <label class="block text-sm text-gray-500 mb-1">确认密码</label>
-          <input v-model="confirmPassword" type="password" placeholder="再次输入密码" @keyup.enter="handleRegister"
+          <input v-model="confirmPassword" type="password" placeholder="再次输入密码"
             class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-accent ring-accent outline-none transition" />
+        </div>
+        <div>
+          <label class="block text-sm text-gray-500 mb-1">系统邀请/激活码</label>
+          <input v-model="activationCode" type="text" placeholder="例如：CPH-A1B2C3D4" @keyup.enter="handleRegister"
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-accent ring-accent outline-none transition uppercase" />
         </div>
         <button @click="handleRegister" :disabled="loading"
           class="w-full py-3 bg-accent bg-accent-hover text-white rounded-xl font-medium transition active:scale-95 disabled:opacity-50">
@@ -45,12 +50,13 @@ const auth = useAuthStore()
 const username = ref('')
 const password = ref('')
 const confirmPassword = ref('')
+const activationCode = ref('')
 const error = ref('')
 const loading = ref(false)
 
 async function handleRegister() {
-  if (!username.value || !password.value) {
-    error.value = '请填写完整信息'
+  if (!username.value || !password.value || !activationCode.value) {
+    error.value = '请填写完整的账号、密码和激活码'
     return
   }
   if (password.value !== confirmPassword.value) {
@@ -60,8 +66,10 @@ async function handleRegister() {
   loading.value = true
   error.value = ''
   try {
-    await auth.register(username.value, password.value)
-    router.push('/activate')
+    // 传递激活码到统一注册接口
+    await auth.register(username.value, password.value, activationCode.value)
+    // 注册并激活成功，直接跳转大厅
+    router.push('/')
   } catch (err) {
     error.value = err.error || '注册失败'
   } finally {
