@@ -26,10 +26,13 @@
         <span class="text-slate-800 font-black text-xl tracking-tighter italic">Lv.{{ petStage }}</span>
       </div>
       
-      <!-- 更换宠物按钮 (放缩在右上角) -->
-      <button v-if="student.pet_type && !batchMode"
-        class="absolute -top-1.5 right-0 w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-slate-50 rounded-full text-xs text-slate-400 hover:text-accent hover:bg-slate-100 transition-colors z-20" title="更换宠物"
-        @click.stop="$emit('change-pet')">🔄</button>
+      <!-- 右上角操作按钮区 -->
+      <div v-if="student.pet_type && !batchMode" class="absolute -top-1.5 right-0 flex gap-1.5 z-20">
+        <button class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-full text-sm text-slate-400 hover:text-sky-500 hover:bg-sky-50 shadow-sm border border-slate-100 transition-all active:scale-95" title="打印收集卡"
+          @click.stop="$emit('print-cert')">🖨️</button>
+        <button class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-full text-sm text-slate-400 hover:text-accent hover:bg-red-50 shadow-sm border border-slate-100 transition-all active:scale-95" title="更换宠物"
+          @click.stop="$emit('change-pet')">🔄</button>
+      </div>
     </div>
 
     <!-- 宠物图片区 (带高级底层光圈) -->
@@ -41,7 +44,7 @@
       </div>
       <div v-else class="relative w-full flex justify-center mt-0 mb-1 animate-float-idle">
         <img :src="petImageUrl" :alt="student.pet_name || '宠物'"
-          class="w-24 h-24 sm:w-32 sm:h-32 object-contain relative z-10 animate-breathe transition-transform duration-500 scale-[1.2] sm:scale-[1.3] hover:scale-[1.35] sm:hover:scale-[1.45]" :class="{ 'animate-bounce': justScored }" />
+          class="w-28 h-28 sm:w-36 sm:h-36 object-contain relative z-10 animate-breathe transition-transform duration-500 scale-[1.2] sm:scale-[1.3] hover:scale-[1.35] sm:hover:scale-[1.45]" :class="{ 'animate-bounce': justScored }" />
       </div>
     </div>
 
@@ -87,6 +90,14 @@
       @click.stop="$emit('graduate')">
       ✨ 召唤守护兽
     </button>
+
+    <!-- 飞入的食物动效层 -->
+    <div class="absolute inset-0 pointer-events-none rounded-[1.8rem] overflow-hidden z-50">
+      <div v-for="food in flyingFoods" :key="food.id"
+           class="absolute left-1/2 bottom-8 animate-feed-fly flex justify-center items-center">
+        <span class="text-3xl drop-shadow-2xl filter">{{ food.icon }}</span>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -103,14 +114,30 @@ const props = defineProps({
   growthStages: Array
 })
 
-defineEmits(['click', 'select', 'change-pet', 'graduate', 'show-badges'])
+defineEmits(['click', 'select', 'change-pet', 'graduate', 'show-badges', 'print-cert'])
 
 const justScored = ref(false)
+const flyingFoods = ref([])
+let foodIdCounter = 0
 
 watch(() => props.student.food_count, (newVal, oldVal) => {
   if (oldVal !== undefined && newVal !== oldVal) {
     justScored.value = true
     setTimeout(() => { justScored.value = false }, 800)
+
+    // 如果是加分，则触发喂食飞行特效
+    if (newVal > oldVal) {
+      const id = foodIdCounter++
+      const icons = ['🍖', '🍎', '🍓', '🥕', '✨', '🍬', '🍔']
+      const icon = icons[Math.floor(Math.random() * icons.length)]
+      
+      flyingFoods.value.push({ id, icon })
+      
+      // 动画结束后移除 DOM
+      setTimeout(() => {
+        flyingFoods.value = flyingFoods.value.filter(f => f.id !== id)
+      }, 1000)
+    }
   }
 })
 
@@ -149,3 +176,29 @@ const petImageUrl = computed(() => {
   return `/pet-images/${pet.folder}/${petStage.value}.webp`
 })
 </script>
+
+<style scoped>
+@keyframes feed-fly {
+  0% {
+    transform: translate(-50%, 0) scale(0.5) rotate(-20deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -30px) scale(1.3) rotate(10deg);
+  }
+  70% {
+    opacity: 1;
+    transform: translate(-50%, -100px) scale(1) rotate(-10deg);
+  }
+  100% {
+    transform: translate(-50%, -130px) scale(0) rotate(20deg);
+    opacity: 0;
+  }
+}
+
+.animate-feed-fly {
+  /* 调整持续时间和缓冲函数让“吃入”有吸附感 */
+  animation: feed-fly 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+</style>
