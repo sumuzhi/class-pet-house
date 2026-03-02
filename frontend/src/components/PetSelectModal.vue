@@ -1,37 +1,42 @@
 <template>
   <div class="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4" @click.self="$emit('close')">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-5 max-h-[80vh] overflow-y-auto">
-      <h3 id="pet-selection-title" class="text-center font-bold text-gray-700 mb-1">🐾 领养宠物</h3>
-      <p class="text-center text-xs text-gray-400 mb-4">为 {{ student.name }} 选择一只宠物</p>
-
-      <!-- 起名输入框 -->
-      <div v-if="selectedPet" class="mb-4 text-center">
-        <img :src="`/pet-images/${selectedPet.folder}/1.webp`" class="w-56 h-56 sm:w-72 sm:h-72 mx-auto object-contain mb-6 drop-shadow-2xl scale-125 transition-transform" />
-        <p class="text-xl font-black text-gray-800 mb-3">已选：{{ selectedPet.name }}</p>
-        <div class="flex items-center justify-center gap-3 w-full max-w-lg mx-auto mb-4">
-          <input v-model="petName" type="text" :placeholder="`给${selectedPet.name}起名字`"
-            maxlength="20" @keyup.enter="confirmSelect"
-            class="flex-1 min-w-0 px-5 py-4 rounded-2xl border-4 border-slate-200 text-2xl outline-none focus:border-accent text-center font-black" />
-          <button @click="generateRandomName" class="shrink-0 p-4 bg-slate-100 hover:bg-slate-200 rounded-2xl text-4xl transition-transform active:scale-90 hover:rotate-12 outline-none shadow-sm h-full flex items-center justify-center border-4 border-transparent" title="随机网感名字">
-            🎲
-          </button>
-        </div>
-        <div class="flex gap-2 justify-center mt-3">
-          <button @click="selectedPet = null"
-            class="px-4 py-1.5 bg-gray-100 text-gray-600 rounded-lg text-sm">重选</button>
-          <button @click="confirmSelect"
-            class="px-4 py-1.5 bg-accent text-white rounded-lg text-sm">确认领养</button>
-        </div>
-      </div>
-
-      <!-- 宠物列表控制区 -->
-      <div v-else>
-        <div class="mb-4 relative">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-5 max-h-[80vh] flex flex-col overflow-hidden">
+      <!-- 固定的头部 -->
+      <div class="shrink-0 mb-4">
+        <h3 id="pet-selection-title" class="text-center font-bold text-gray-700 mb-1">🐾 领养宠物</h3>
+        <p class="text-center text-xs text-gray-400">为 {{ student.name }} 选择一只宠物</p>
+        
+        <!-- 搜索框（仅在列表模式显示） -->
+        <div v-if="!selectedPet" class="mt-4 relative px-1">
           <input v-model="searchQuery" type="text" placeholder="🔍 搜索宠物名称..."
             class="w-full px-5 py-4 rounded-2xl border-4 border-slate-100/80 bg-slate-50 text-xl outline-none focus:border-accent/50 font-bold placeholder-slate-400 transition-colors shadow-sm" />
         </div>
-        
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 px-2">
+      </div>
+
+      <!-- 可滚动的内容区 -->
+      <div class="flex-1 overflow-y-auto min-h-0 pb-2 px-1">
+        <!-- 起名输入框 -->
+        <div v-if="selectedPet" class="text-center py-2">
+          <img :src="`/pet-images/${selectedPet.folder}/1.webp`" class="w-56 h-56 sm:w-72 sm:h-72 mx-auto object-contain mb-6 drop-shadow-2xl scale-125 transition-transform" />
+          <p class="text-xl font-black text-gray-800 mb-3">已选：{{ selectedPet.name }}</p>
+          <div class="flex items-center justify-center gap-3 w-full max-w-lg mx-auto mb-4">
+            <input v-model="petName" type="text" :placeholder="`给${selectedPet.name}起名字`"
+              maxlength="20" @keyup.enter="confirmSelect"
+              class="flex-1 min-w-0 px-5 py-4 rounded-2xl border-4 border-slate-200 text-2xl outline-none focus:border-accent text-center font-black" />
+            <button @click="generateRandomName" class="shrink-0 p-4 bg-slate-100 hover:bg-slate-200 rounded-2xl text-4xl transition-transform active:scale-90 hover:rotate-12 outline-none shadow-sm h-full flex items-center justify-center border-4 border-transparent" title="随机网感名字">
+              🎲
+            </button>
+          </div>
+          <div class="flex gap-2 justify-center mt-3">
+            <button @click="selectedPet = null"
+              class="px-4 py-1.5 bg-gray-100 text-gray-600 rounded-lg text-sm">重选</button>
+            <button @click="confirmSelect"
+              class="px-4 py-1.5 bg-accent text-white rounded-lg text-sm">确认领养</button>
+          </div>
+        </div>
+
+        <!-- 宠物网格 -->
+        <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <button v-for="pet in filteredPets" :key="pet.id"
             @click="selectedPet = pet"
             class="flex flex-col items-center p-6 rounded-[2rem] border-4 border-slate-100/80 bg-slate-50/50 hover:border-accent hover:bg-theme-light transition-all active:scale-95 group shadow-sm hover:shadow-xl relative overflow-hidden">
