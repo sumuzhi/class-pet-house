@@ -18,12 +18,14 @@ api.interceptors.response.use(
   err => {
     const status = err.response?.status
     const data = err.response?.data
-    if (status === 401) {
+    const url = err.config?.url
+
+    // 只有在非登录接口报错 401 时才强制跳回登录页
+    if (status === 401 && !url?.includes('/auth/login')) {
       localStorage.removeItem('token')
       window.location.href = '/login'
-    } else if (status === 403 && data?.status === 'not_activated') {
-      window.location.href = '/activate'
     }
+
     return Promise.reject(data || err)
   }
 )
