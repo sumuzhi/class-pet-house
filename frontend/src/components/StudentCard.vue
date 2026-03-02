@@ -43,9 +43,12 @@
         🥚
       </div>
       <div v-else class="relative w-full flex justify-center mt-0 mb-1 animate-float-idle">
-        <img :src="petImageUrl" :alt="student.pet_name || '宠物'"
+        <img v-if="petImageUrl" :src="petImageUrl" :alt="student.pet_name || '宠物'"
           class="w-40 h-40 sm:w-56 sm:h-56 object-contain relative z-10 animate-breathe transition-transform duration-500" 
           :class="{ 'animate-bounce': justScored, 'scale-[1.6] sm:scale-[1.8] hover:scale-[1.7] sm:hover:scale-[1.9]': petStage === 1, 'scale-[1.3] sm:scale-[1.4] hover:scale-[1.45] sm:hover:scale-[1.55]': petStage > 1 }" />
+        <div v-else class="w-32 h-32 sm:w-44 sm:h-44 flex items-center justify-center text-2xl sm:text-4xl bg-slate-50 rounded-full border border-dashed border-red-200 text-red-300 font-bold text-center p-2">
+          宠物已下架
+        </div>
       </div>
     </div>
 
