@@ -150,24 +150,24 @@
   <!-- 底部 TabBar (仅移动端显示) -->
   <div class="md:hidden fixed bottom-0 left-0 right-0 z-[999] bg-white shadow-[0_-5px_20px_rgba(0,0,0,0.05)] border-t border-slate-100 pb-[env(safe-area-inset-bottom)]">
     <nav class="max-w-5xl mx-auto flex items-center justify-around px-2 py-2 bg-white relative">
-      <router-link to="/" class="flex flex-col items-center justify-center transition-all relative group w-16 h-12" exact-active-class="text-[#0bc7cf] font-black">
-        <span class="text-xl sm:text-2xl mb-1 transition-transform" :class="route.path === '/' ? '' : 'opacity-70 group-hover:scale-110'">🏠</span>
-        <span class="text-[10px] sm:text-[11px] leading-none text-slate-400 font-bold" :class="route.path === '/' ? 'text-[#0bc7cf]' : ''">首页</span>
+      <router-link to="/" class="flex flex-col items-center justify-center transition-all relative group w-16 h-14 rounded-2xl" :class="route.path === '/' ? 'bg-cyan-50/80 text-[#0bc7cf] font-black scale-105' : 'text-slate-400 hover:bg-slate-50'">
+        <span class="text-xl sm:text-2xl mb-1 transition-transform" :class="route.path === '/' ? 'scale-110 drop-shadow-sm' : 'opacity-70 group-hover:scale-110'">🏠</span>
+        <span class="text-[10px] sm:text-[11px] leading-none font-bold" :class="route.path === '/' ? 'text-[#0bc7cf]' : ''">首页</span>
       </router-link>
 
-      <router-link to="/shop" class="flex flex-col items-center justify-center transition-all relative group w-16 h-12" active-class="text-[#0bc7cf] font-black">
-        <span class="text-xl sm:text-2xl mb-1 transition-transform" :class="route.path.startsWith('/shop') ? '' : 'opacity-70 group-hover:scale-110'">🛍️</span>
-        <span class="text-[10px] sm:text-[11px] leading-none text-slate-400 font-bold" :class="route.path.startsWith('/shop') ? 'text-[#0bc7cf]' : ''">小卖部</span>
+      <router-link to="/shop" class="flex flex-col items-center justify-center transition-all relative group w-16 h-14 rounded-2xl" :class="route.path.startsWith('/shop') ? 'bg-cyan-50/80 text-[#0bc7cf] font-black scale-105' : 'text-slate-400 hover:bg-slate-50'">
+        <span class="text-xl sm:text-2xl mb-1 transition-transform" :class="route.path.startsWith('/shop') ? 'scale-110 drop-shadow-sm' : 'opacity-70 group-hover:scale-110'">🛍️</span>
+        <span class="text-[10px] sm:text-[11px] leading-none font-bold" :class="route.path.startsWith('/shop') ? 'text-[#0bc7cf]' : ''">小卖部</span>
       </router-link>
 
-      <router-link to="/leaderboard" class="flex flex-col items-center justify-center transition-all relative group w-16 h-12" active-class="text-[#0bc7cf] font-black">
-        <span class="text-xl sm:text-2xl mb-1 transition-transform" :class="route.path.startsWith('/leaderboard') ? '' : 'opacity-70 group-hover:scale-110'">🏆</span>
-        <span class="text-[10px] sm:text-[11px] leading-none text-slate-400 font-bold" :class="route.path.startsWith('/leaderboard') ? 'text-[#0bc7cf]' : ''">光荣榜</span>
+      <router-link to="/leaderboard" class="flex flex-col items-center justify-center transition-all relative group w-16 h-14 rounded-2xl" :class="route.path.startsWith('/leaderboard') ? 'bg-cyan-50/80 text-[#0bc7cf] font-black scale-105' : 'text-slate-400 hover:bg-slate-50'">
+        <span class="text-xl sm:text-2xl mb-1 transition-transform" :class="route.path.startsWith('/leaderboard') ? 'scale-110 drop-shadow-sm' : 'opacity-70 group-hover:scale-110'">🏆</span>
+        <span class="text-[10px] sm:text-[11px] leading-none font-bold" :class="route.path.startsWith('/leaderboard') ? 'text-[#0bc7cf]' : ''">光荣榜</span>
       </router-link>
 
-      <router-link to="/settings" class="flex flex-col items-center justify-center transition-all relative group w-16 h-12" active-class="text-[#0bc7cf] font-black">
-        <span class="text-xl sm:text-2xl mb-1 transition-transform" :class="route.path.startsWith('/settings') ? '' : 'opacity-70 group-hover:scale-110'">⚙️</span>
-        <span class="text-[10px] sm:text-[11px] leading-none text-slate-400 font-bold" :class="route.path.startsWith('/settings') ? 'text-[#0bc7cf]' : ''">设置</span>
+      <router-link to="/settings" class="flex flex-col items-center justify-center transition-all relative group w-16 h-14 rounded-2xl" :class="route.path.startsWith('/settings') ? 'bg-cyan-50/80 text-[#0bc7cf] font-black scale-105' : 'text-slate-400 hover:bg-slate-50'">
+        <span class="text-xl sm:text-2xl mb-1 transition-transform" :class="route.path.startsWith('/settings') ? 'scale-110 drop-shadow-sm' : 'opacity-70 group-hover:scale-110'">⚙️</span>
+        <span class="text-[10px] sm:text-[11px] leading-none font-bold" :class="route.path.startsWith('/settings') ? 'text-[#0bc7cf]' : ''">设置</span>
       </router-link>
     </nav>
   </div>

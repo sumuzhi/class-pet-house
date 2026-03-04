@@ -126,10 +126,12 @@
     </div>
 
     <!-- 保存按钮 -->
-    <button @click="saveSettings"
-      class="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 sm:left-auto sm:right-6 sm:translate-x-0 w-[calc(100%-1.5rem)] sm:w-auto px-6 py-3 bg-accent text-white rounded-xl shadow-lg bg-accent-hover transition active:scale-95 z-50">
-      💾 保存设置
-    </button>
+    <div class="pt-4 pb-8">
+      <button @click="saveSettings"
+        class="w-full sm:w-auto px-10 py-3.5 bg-accent text-white rounded-2xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95 flex items-center justify-center gap-2 text-base mx-auto">
+        <span class="text-xl">💾</span> 保存全部设置
+      </button>
+    </div>
 
     <!-- 批量添加弹窗 -->
     <BatchAddModal

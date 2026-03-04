@@ -107,6 +107,7 @@
 import { computed, ref, watch } from 'vue'
 import { PETS } from '../utils/pets'
 import OdometerNumber from './OdometerNumber.vue'
+import { useClassStore } from '../stores/class'
 
 const props = defineProps({
   student: Object,
@@ -178,12 +179,16 @@ const petImageUrl = computed(() => {
   return `/pet-images/${pet.folder}/${petStage.value}.webp?v=3`
 })
 
-// 低阶段宠物图片本身较小，通过 scale 放大使视觉大小一致（暂时关闭）
 const petScale = computed(() => {
   return 1
 })
 
-const groupName = computed(() => props.student.group_name || '')
+const classStore = useClassStore()
+const groupName = computed(() => {
+  if (!props.student.group_id) return ''
+  const g = classStore.groups.find(g => g.id === props.student.group_id)
+  return g ? g.name : ''
+})
 
 </script>
 
