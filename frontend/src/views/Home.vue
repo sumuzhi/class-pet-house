@@ -1,7 +1,10 @@
 <template>
   <div>
-    <!-- 学生卡片网格 -->
-    <div class="grid grid-cols-1 min-[430px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-5 lg:gap-6 px-1 sm:px-0 py-2">
+    <!-- 分组管理模式 -->
+    <GroupManageView v-if="groupMode" @close="$emit('exit-group-mode')" />
+
+    <!-- 学生卡片网格 (普通模式) -->
+    <div v-else class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 sm:gap-4 lg:gap-6 px-1 sm:px-0 py-2">
       <StudentCard
         v-for="(s, index) in filteredStudents" :key="s.id"
         class="animate-stagger-fade-in"
@@ -17,6 +20,7 @@
         @graduate="handleGraduate(s)"
         @show-badges="handleShowBadges(s)"
         @print-cert="handlePrintCert(s)"
+        @ai-evaluate="handleAiEvaluate(s)"
       />
     </div>
 
@@ -62,7 +66,17 @@
       v-if="showCertificateModal"
       :show="showCertificateModal"
       :student="selectedStudent"
+      :growth-stages="classStore.currentClass?.growth_stages"
       @close="showCertificateModal = false"
+    />
+
+    <!-- AI 评语弹窗 -->
+    <AiEvaluateModal
+      v-if="showAiEvaluate"
+      :show="showAiEvaluate"
+      :student="selectedStudent"
+      :class-id="classStore.currentClass?.id"
+      @close="showAiEvaluate = false"
     />
   </div>
 </template>
@@ -76,7 +90,9 @@ import PetSelectModal from '../components/PetSelectModal.vue'
 import GraduateModal from '../components/GraduateModal.vue'
 import BadgeWall from '../components/BadgeWall.vue'
 import OdometerNumber from '../components/OdometerNumber.vue'
-import CertificateModal from '../components/CertificateModal.vue' // Added import
+import CertificateModal from '../components/CertificateModal.vue'
+import AiEvaluateModal from '../components/AiEvaluateModal.vue'
+import GroupManageView from '../components/GroupManageView.vue'
 import api from '../utils/api'
 import Dialog from '../utils/dialog'
 
@@ -84,6 +100,7 @@ const props = defineProps({
   searchQuery: String,
   batchMode: Boolean,
   undoMode: Boolean,
+  groupMode: Boolean,
   activeGroup: [Number, String],
   selectedStudents: Set,
   sortMode: {
@@ -92,18 +109,20 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['select-student'])
+const emit = defineEmits(['select-student', 'exit-group-mode'])
 const classStore = useClassStore()
 const showScoreModal = ref(false)
 const showPetModal = ref(false)
 const showGraduateModal = ref(false)
 const showBadgeWall = ref(false)
-const showCertificateModal = ref(false) // Added ref
+const showCertificateModal = ref(false)
+const showAiEvaluate = ref(false)
 const selectedStudent = ref(null)
 const defaultStages = [0, 5, 10, 20, 30, 45, 60, 75, 90, 100]
 
 const filteredStudents = computed(() => {
-  let list = [...classStore.students]
+  // 必须在此处访问 classStore.students 触发依赖收集，不能在外部解构
+  let list = classStore.students.map(s => ({ ...s }))
 
   // 搜索过滤
   if (props.searchQuery) {
@@ -195,5 +214,10 @@ function handleShowBadges(student) {
 function handlePrintCert(student) {
   selectedStudent.value = student
   showCertificateModal.value = true
+}
+
+function handleAiEvaluate(student) {
+  selectedStudent.value = student
+  showAiEvaluate.value = true
 }
 </script>

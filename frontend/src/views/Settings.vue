@@ -108,6 +108,14 @@
       </div>
     </div>
 
+    <!-- 🤖 AI 智能助手 -->
+    <div class="bg-white rounded-2xl p-5 shadow-sm space-y-3">
+      <h3 class="font-bold text-gray-700 mb-3">🤖 AI 智能助手</h3>
+      <button @click="showAiReport = true"
+        class="w-full py-2.5 bg-gradient-to-r from-violet-500 to-purple-500 text-white rounded-lg text-sm font-bold hover:shadow-lg transition-all">📊 AI 生成班级周报</button>
+      <p class="text-xs text-gray-400">基于全班积分数据，AI自动生成周报/月报，可直接复制发家长群</p>
+    </div>
+
     <!-- 账号管理 -->
     <div class="bg-white rounded-2xl p-5 shadow-sm space-y-3">
       <h3 class="font-bold text-gray-700 mb-3">👤 账号管理</h3>
@@ -129,6 +137,14 @@
       @close="showBatchAdd = false"
       @added="showBatchAdd = false"
     />
+
+    <!-- AI 周报弹窗 -->
+    <AiReportModal
+      v-if="showAiReport"
+      :show="showAiReport"
+      :class-id="classStore.currentClass?.id"
+      @close="showAiReport = false"
+    />
   </div>
 </template>
 
@@ -139,6 +155,7 @@ import { useClassStore } from '../stores/class'
 import { useAuthStore } from '../stores/auth'
 import api from '../utils/api'
 import BatchAddModal from '../components/BatchAddModal.vue'
+import AiReportModal from '../components/AiReportModal.vue'
 import { useTheme } from '../composables/useTheme'
 import { PETS } from '../utils/pets'
 import Dialog from '../utils/dialog'
@@ -157,6 +174,7 @@ const currentTheme = ref('pink')
 const newRule = ref({ name: '', icon: '⭐', value: 1 })
 const growthStagesText = ref('')
 const copyFromClassId = ref('')
+const showAiReport = ref(false)
 
 const themes = [
   { id: 'pink', color: '#f472b6' },
