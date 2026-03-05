@@ -1,99 +1,189 @@
 const fs = require('fs');
 const path = require('path');
 const COS = require('cos-nodejs-sdk-v5');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
-// 1. 请在这里填入你的腾讯云 COS 密钥信息
-const SECRET_ID = '你的 SecretId';
-const SECRET_KEY = '你的 SecretKey';
-const BUCKET = 'pet-1310518898';     // 替换为你的 Bucket 名称
-const REGION = 'ap-guangzhou';       // 替换为你的所属地域
+const SECRET_ID = (process.env.COS_SECRET_ID || '').trim();
+const SECRET_KEY = (process.env.COS_SECRET_KEY || '').trim();
+const BUCKET = (process.env.COS_BUCKET || '').trim();
+const REGION = (process.env.COS_REGION || '').trim();
+
+const LOCAL_DIR = path.resolve(
+  process.env.COS_LOCAL_DIR || path.resolve(__dirname, '../assets/pets')
+);
+const KEY_PREFIX = (process.env.COS_KEY_PREFIX || '').replace(/^\/+|\/+$/g, '');
+const STORAGE_CLASS = (process.env.COS_STORAGE_CLASS || 'MAZ_STANDARD').trim();
+const CONCURRENCY = Number(process.env.COS_CONCURRENCY || 10);
+const RETRY = Number(process.env.COS_RETRY || 2);
+const MAX_FILES = Number(process.env.COS_MAX_FILES || 0);
+const SKIP_EXISTING = String(process.env.COS_SKIP_EXISTING || 'false').toLowerCase() === 'true';
+
+if (!SECRET_ID || !SECRET_KEY || !BUCKET || !REGION) {
+  console.error('❌ 缺少 COS 配置。请在 backend/.env 中配置:');
+  console.error('COS_SECRET_ID, COS_SECRET_KEY, COS_BUCKET, COS_REGION');
+  process.exit(1);
+}
+
+if (!fs.existsSync(LOCAL_DIR)) {
+  console.error(`❌ 本地目录不存在: ${LOCAL_DIR}`);
+  process.exit(1);
+}
 
 const cos = new COS({
-    SecretId: SECRET_ID,
-    SecretKey: SECRET_KEY,
+  SecretId: SECRET_ID,
+  SecretKey: SECRET_KEY,
 });
 
-// 需要上传的本地文件夹绝对路径
-const LOCAL_DIR = '/Users/mango/Documents/class-pet-house/assets/pets';
-
-/**
- * 递归获取目录下所有文件
- */
 function getAllFiles(dirPath, filesArray = []) {
-    const files = fs.readdirSync(dirPath);
-
-    files.forEach(function (file) {
-        const fullPath = path.join(dirPath, file);
-        if (fs.statSync(fullPath).isDirectory()) {
-            getAllFiles(fullPath, filesArray);
-        } else {
-            // 过滤掉隐藏文件比如 .DS_Store
-            if (!file.startsWith('.')) {
-                filesArray.push(fullPath);
-            }
-        }
-    });
-
-    return filesArray;
-}
-
-/**
- * 上传单个文件
- */
-function uploadFile(localFilePath) {
-    // 算出该文件相对于 LOCAL_DIR 的相对路径，作为云端的 Key (也是去除了第一个 / 的路径)
-    const relativePath = path.relative(LOCAL_DIR, localFilePath);
-
-    // 因为 Windows 系统的路径分隔符是反斜杠，COS 需要正斜杠，所以统一替换
-    const cosKey = relativePath.split(path.sep).join('/');
-
-    return new Promise((resolve, reject) => {
-        cos.putObject({
-            Bucket: BUCKET,
-            Region: REGION,
-            Key: cosKey,
-            StorageClass: 'STANDARD',
-            Body: fs.createReadStream(localFilePath),
-            onProgress: function (progressData) {
-                // 如果文件很大可以看进度，这里文件小就注释掉了
-                // console.log(`[${cosKey}] 上传中... ${JSON.stringify(progressData)}`);
-            }
-        }, function (err, data) {
-            if (err) {
-                console.error(`❌ 上传失败: ${cosKey}`, err.Message || err);
-                reject(err);
-            } else {
-                console.log(`✅ 上传成功: ${cosKey}`);
-                resolve(data);
-            }
-        });
-    });
-}
-
-/**
- * 主执行函数：并发限制上传
- */
-async function startUpload() {
-    console.log(`🔍 开始扫描目录: ${LOCAL_DIR}`);
-    if (!fs.existsSync(LOCAL_DIR)) {
-        console.error('❌ 本地目录不存在，请检查路径！');
-        return;
+  const files = fs.readdirSync(dirPath);
+  for (const file of files) {
+    if (file.startsWith('.')) continue;
+    const fullPath = path.join(dirPath, file);
+    const stat = fs.statSync(fullPath);
+    if (stat.isDirectory()) {
+      getAllFiles(fullPath, filesArray);
+    } else {
+      filesArray.push(fullPath);
     }
-
-    const allFiles = getAllFiles(LOCAL_DIR);
-    console.log(`📦 扫描完毕，共发现 ${allFiles.length} 个文件需要上传\n`);
-
-    // 为了防止一次性发起几百个请求导致内存溢出或网络堵塞，我们使用批量并发控制 (例如每次传 10 个)
-    const CONCURRENCY = 10;
-
-    for (let i = 0; i < allFiles.length; i += CONCURRENCY) {
-        const chunk = allFiles.slice(i, i + CONCURRENCY);
-        // 等待这一批次的文件全部上传完成
-        await Promise.all(chunk.map(file => uploadFile(file)));
-    }
-
-    console.log(`\n🎉 全部 ${allFiles.length} 个文件上传完毕！`);
-    console.log(`现在的 CDN 基础路径是: https://${BUCKET}.cos.${REGION}.myqcloud.com/`);
+  }
+  return filesArray;
 }
 
-startUpload();
+function toCosKey(localFilePath) {
+  const relativePath = path.relative(LOCAL_DIR, localFilePath).split(path.sep).join('/');
+  return KEY_PREFIX ? `${KEY_PREFIX}/${relativePath}` : relativePath;
+}
+
+function headObjectIfExists(key) {
+  return new Promise((resolve, reject) => {
+    cos.headObject(
+      {
+        Bucket: BUCKET,
+        Region: REGION,
+        Key: key,
+      },
+      (err) => {
+        if (!err) return resolve(true);
+        const code = err.statusCode || err.error?.Code;
+        if (code === 404 || code === 'NoSuchKey' || code === 'Not Found') return resolve(false);
+        reject(err);
+      }
+    );
+  });
+}
+
+function putObject(localFilePath, key, storageClass) {
+  return new Promise((resolve, reject) => {
+    cos.putObject(
+      {
+        Bucket: BUCKET,
+        Region: REGION,
+        Key: key,
+        StorageClass: storageClass,
+        Body: fs.createReadStream(localFilePath),
+      },
+      (err, data) => {
+        if (err) return reject(err);
+        resolve(data);
+      }
+    );
+  });
+}
+
+async function uploadWithRetry(localFilePath) {
+  const key = toCosKey(localFilePath);
+
+  if (SKIP_EXISTING) {
+    const exists = await headObjectIfExists(key);
+    if (exists) {
+      console.log(`⏭️ 已存在，跳过: ${key}`);
+      return { ok: true, skipped: true, key };
+    }
+  }
+
+  let lastErr = null;
+  let storageClass = STORAGE_CLASS;
+  const maxTry = Math.max(1, RETRY + 1);
+
+  for (let i = 1; i <= maxTry; i++) {
+    try {
+      await putObject(localFilePath, key, storageClass);
+      console.log(`✅ 上传成功: ${key}`);
+      return { ok: true, skipped: false, key };
+    } catch (err) {
+      lastErr = err;
+      const code = err.code || err.error?.Code || 'UnknownError';
+
+      // 若误配为单 AZ 存储类型，自动切换并重试
+      if (code === 'SAZOperationNotSupportOnMAZBucket' && !storageClass.startsWith('MAZ_')) {
+        storageClass = 'MAZ_STANDARD';
+      }
+
+      if (i < maxTry) {
+        console.warn(`⚠️ 上传重试(${i}/${maxTry - 1}): ${key} | ${code}`);
+        await new Promise((r) => setTimeout(r, 300 * i));
+        continue;
+      }
+    }
+  }
+
+  console.error(`❌ 上传失败: ${key}`);
+  console.error(lastErr?.Message || lastErr?.message || lastErr);
+  return { ok: false, skipped: false, key, err: lastErr };
+}
+
+async function runInBatches(files) {
+  let success = 0;
+  let skipped = 0;
+  const failed = [];
+
+  for (let i = 0; i < files.length; i += CONCURRENCY) {
+    const chunk = files.slice(i, i + CONCURRENCY);
+    const results = await Promise.all(chunk.map((file) => uploadWithRetry(file)));
+    for (const r of results) {
+      if (r.ok && r.skipped) skipped++;
+      else if (r.ok) success++;
+      else failed.push(r);
+    }
+  }
+
+  return { success, skipped, failed };
+}
+
+async function main() {
+  console.log(`🔍 扫描目录: ${LOCAL_DIR}`);
+  console.log(`☁️ Bucket=${BUCKET} Region=${REGION} StorageClass=${STORAGE_CLASS}`);
+
+  let allFiles = getAllFiles(LOCAL_DIR);
+  if (MAX_FILES > 0) allFiles = allFiles.slice(0, MAX_FILES);
+
+  console.log(`📦 待处理文件数: ${allFiles.length}\n`);
+  if (!allFiles.length) {
+    console.log('没有可上传文件。');
+    return;
+  }
+
+  const { success, skipped, failed } = await runInBatches(allFiles);
+
+  console.log('\n---- 上传结果 ----');
+  console.log(`成功: ${success}`);
+  console.log(`跳过: ${skipped}`);
+  console.log(`失败: ${failed.length}`);
+
+  if (failed.length > 0) {
+    console.log('\n失败列表(前20):');
+    failed.slice(0, 20).forEach((f) => {
+      const code = f.err?.code || f.err?.error?.Code || 'UnknownError';
+      console.log(`- ${f.key} | ${code}`);
+    });
+    process.exitCode = 1;
+  } else {
+    const base = `https://${BUCKET}.cos.${REGION}.myqcloud.com/`;
+    console.log(`\n🎉 全部完成。访问前缀: ${base}`);
+  }
+}
+
+main().catch((err) => {
+  console.error('❌ 脚本异常退出:', err?.message || err);
+  process.exit(1);
+});
