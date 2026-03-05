@@ -26,11 +26,17 @@
 <script setup>
 import { computed } from 'vue'
 import { useEscClose } from '../composables/useEscClose'
-import { PETS } from '../utils/pets'
+import { PETS, getPetImageUrl } from '../utils/pets'
 
 const props = defineProps({ student: Object })
 const emit = defineEmits(['close'])
 useEscClose(emit)
+
+const petImageUrl = computed(() => {
+  if (!props.student || !props.student.pet_type) return ''
+  const pet = PETS.find(p => p.id === props.student.pet_type)
+  return pet ? getPetImageUrl(pet.folder, 10) : ''
+})
 
 const badges = computed(() => props.student.badges || [])
 
@@ -42,6 +48,6 @@ function getPetName(petType) {
 function getBadgeImage(badge) {
   const pet = PETS.find(p => p.id === badge.pet_type)
   if (!pet) return ''
-  return `/pet-images/${pet.folder}/10.webp?v=3`
+  return getPetImageUrl(pet.folder, 10)
 }
 </script>
