@@ -1,8 +1,8 @@
 <template>
-  <div class="w-full mx-auto flex flex-col md:flex-row gap-6 items-start pb-20">
+  <div class="w-full mx-auto flex flex-col md:flex-row gap-6 items-start pb-20 relative">
     
     <!-- 左侧/顶部 固定的菜单导航 -->
-    <div class="w-full md:w-64 bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-sm flex-shrink-0 sticky top-4 md:top-6 z-30">
+    <div class="w-full md:w-64 bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-sm flex-shrink-0 sticky top-[90px] md:top-[110px] z-30 self-start">
       <h2 class="text-xl font-bold text-gray-800 mb-4 px-2 hidden md:block">⚙️ 系统设置</h2>
       <nav class="flex flex-row md:flex-col gap-2 overflow-x-auto scrollbar-hide pb-2 md:pb-0">
         <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
@@ -62,7 +62,7 @@
       <!--========================================
         学生管理
       =========================================-->
-      <div v-if="activeTab === 'students'" class="bg-white rounded-2xl p-6 shadow-sm animation-fade-in flex flex-col h-[calc(100vh-140px)] md:h-[600px]">
+      <div v-if="activeTab === 'students'" class="bg-white rounded-2xl p-6 shadow-sm animation-fade-in flex flex-col min-h-[400px]">
         <div class="flex flex-col sm:flex-row justify-between sm:items-center border-b pb-4 mb-4 gap-4 flex-shrink-0">
           <h3 class="text-lg font-bold text-gray-800">学生名单管理</h3>
           <button @click="showBatchAdd = true"
@@ -77,7 +77,7 @@
             class="px-6 py-2.5 bg-accent text-white font-medium rounded-xl hover:bg-accent-hover transition">单独添加</button>
         </div>
 
-        <div class="flex-1 overflow-y-auto space-y-2 pr-2 scrollbar-thin">
+        <div class="flex-1 space-y-2 pr-2">
           <div v-if="classStore.students.length === 0" class="text-center py-10 text-gray-400 border-2 border-dashed border-gray-100 rounded-xl">暂无学生，请在上方输入姓名添加</div>
           <div v-for="s in classStore.students" :key="s.id"
             class="flex items-center justify-between p-3.5 rounded-xl bg-gray-50 hover:bg-sky-50 transition border border-transparent hover:border-sky-100 group">
@@ -94,7 +94,7 @@
       <!--========================================
         加分项管理
       =========================================-->
-      <div v-if="activeTab === 'rules'" class="bg-white rounded-2xl p-6 shadow-sm animation-fade-in flex flex-col h-[calc(100vh-140px)] md:h-[600px]">
+      <div v-if="activeTab === 'rules'" class="bg-white rounded-2xl p-6 shadow-sm animation-fade-in flex flex-col min-h-[400px]">
         <h3 class="text-lg font-bold text-gray-800 border-b pb-4 mb-4 flex-shrink-0">奖励与扣查项目配置</h3>
         
         <div class="bg-orange-50/50 p-4 rounded-xl mb-4 border border-orange-100 flex-shrink-0">
@@ -111,7 +111,7 @@
           </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto space-y-2 pr-2 scrollbar-thin">
+        <div class="flex-1 space-y-2 pr-2">
           <div v-if="rules.length === 0" class="text-center py-10 text-gray-400 border-2 border-dashed border-gray-100 rounded-xl">还没配置任何积分规则</div>
           <div v-for="r in rules" :key="r.id"
              class="flex items-center justify-between p-3.5 rounded-xl bg-gray-50 hover:bg-orange-50 transition border border-transparent hover:border-orange-100 group">
@@ -204,7 +204,7 @@
       <!--========================================
         账号管理
       =========================================-->
-      <div v-if="activeTab === 'account'" class="bg-white rounded-2xl p-6 shadow-sm animation-fade-in flex flex-col h-[calc(100vh-140px)] md:h-[400px]">
+      <div v-if="activeTab === 'account'" class="bg-white rounded-2xl p-6 shadow-sm animation-fade-in flex flex-col min-h-[400px]">
         <h3 class="text-lg font-bold text-gray-800 border-b pb-3 mb-6 flex-shrink-0">账号安全设置</h3>
         <p class="text-sm text-gray-500 mb-6 flex-shrink-0">管理你当前登录的教师账号密码和在线状态登录信息。若遗忘了密码只能通过向管理员索要的激活码寻回。</p>
         
