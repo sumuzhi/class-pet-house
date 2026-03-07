@@ -1,14 +1,14 @@
 <template>
   <div class="min-h-screen text-gray-800 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-4" :style="{ backgroundColor: 'var(--theme-bg, #fef5b5)' }">
     <!-- 顶部主控面板 -->
-    <div ref="topPanelRef" class="fixed top-0 left-0 right-0 z-50 pt-2 pb-2 px-3 sm:px-4 md:px-6 lg:px-8 pointer-events-none flex justify-center">
-      <div class="w-full max-w-[1600px] 2xl:max-w-[1800px] bg-white/95 backdrop-blur-3xl rounded-[1.5rem] sm:rounded-[2rem] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.1)] p-3 sm:p-4 flex flex-col md:flex-row md:items-center gap-2 md:gap-4 pointer-events-auto border border-white relative overflow-hidden">
+    <div ref="topPanelRef" class="fixed top-0 left-0 right-0 z-50 pt-2 pb-1.5 px-3 sm:px-4 md:px-6 lg:px-8 pointer-events-none flex justify-center">
+      <div class="w-full max-w-[1600px] 2xl:max-w-[1800px] bg-white/95 backdrop-blur-3xl rounded-[1.35rem] sm:rounded-[1.75rem] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.1)] px-3 py-2.5 sm:px-4 sm:py-3 flex flex-col md:flex-row md:items-center gap-1.5 md:gap-3 pointer-events-auto border border-white relative overflow-hidden">
         <!-- 装饰性元素 -->
         <div class="absolute -left-10 -top-10 w-24 h-24 bg-cyan-400 rounded-full blur-[40px] opacity-20 pointer-events-none"></div>
 
         <!-- 第一行: 左侧班级 & 右侧操作 -->
         <div class="flex items-center justify-between gap-1 sm:gap-2 z-10 min-w-0 w-full">
-          <button @click="showClassModal = true" class="group flex shrink min-w-0 items-center gap-1 sm:gap-2 text-slate-700 font-bold bg-slate-50 hover:bg-slate-100 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full transition-colors border border-slate-100">
+          <button @click="showClassModal = true" class="group flex shrink min-w-0 items-center gap-1 sm:gap-1.5 text-slate-700 font-bold bg-slate-50 hover:bg-slate-100 px-2 sm:px-3 py-1 rounded-full transition-colors border border-slate-100">
             <span class="text-base sm:text-lg drop-shadow-sm shrink-0">🐾</span> 
             <span class="text-xs sm:text-sm font-bold tracking-wide truncate max-w-[4.5rem] min-[375px]:max-w-[7rem] sm:max-w-[18rem] md:max-w-[24rem]">{{ classStore.currentClass?.name || '默认班级' }}</span>
             <span class="text-[10px] text-slate-400 shrink-0">▼</span>
@@ -17,19 +17,19 @@
           <!-- 功能按钮 -->
           <div v-if="route.path === '/'" class="flex shrink-0 items-center justify-end gap-1 sm:gap-1.5 pl-1 ml-auto">
             <button @click="batchMode = !batchMode; if (batchMode) groupMode = false"
-              class="flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-sm font-bold transition-colors border"
+              class="flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full text-[11px] sm:text-sm font-bold transition-colors border"
               :class="batchMode ? 'bg-accent text-white border-accent shadow-md shadow-accent/20' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 shadow-sm'">
               <span class="text-sm sm:text-base text-[#0bc7cf]" :class="batchMode ? '!text-white' : ''">👥</span>
               <span class="hidden min-[400px]:inline">批量</span>
             </button>
             <button @click="groupMode = !groupMode; if (groupMode) batchMode = false"
-              class="flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-sm font-bold transition-colors border"
+              class="flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full text-[11px] sm:text-sm font-bold transition-colors border"
               :class="groupMode ? 'bg-purple-500 text-white border-purple-500 shadow-md shadow-purple-500/20' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 shadow-sm'">
               <span class="text-sm sm:text-base" :class="groupMode ? 'text-white' : 'text-purple-400'">📋</span>
               <span class="hidden min-[400px]:inline">分组</span>
             </button>
             <div class="relative shrink-0">
-              <select v-model="sortMode" class="appearance-none bg-sky-50 text-sky-600 border border-sky-100 rounded-full pl-2 sm:pl-3 pr-4 sm:pr-6 py-1 sm:py-1.5 text-[11px] sm:text-sm font-bold outline-none cursor-pointer hover:bg-sky-100 transition-colors shadow-sm h-full flex items-center w-[4.5rem] sm:w-auto">
+              <select v-model="sortMode" class="appearance-none bg-sky-50 text-sky-600 border border-sky-100 rounded-full pl-2 sm:pl-3 pr-4 sm:pr-6 py-1 text-[11px] sm:text-sm font-bold outline-none cursor-pointer hover:bg-sky-100 transition-colors shadow-sm h-full flex items-center w-[4.5rem] sm:w-auto">
                 <option value="manual">排序 ⇅</option>
                 <option value="name">字典</option>
                 <option value="food">食物</option>
@@ -44,28 +44,28 @@
         <div v-if="route.path === '/'" class="relative z-10 md:flex-1 md:max-w-md">
           <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
           <input v-model="searchQuery" type="text" placeholder="搜索学生..."
-            class="w-full pl-10 pr-4 py-2 bg-slate-100/80 rounded-full border-none text-sm focus:ring-2 focus:ring-accent focus:bg-white outline-none transition-all font-bold text-slate-600 placeholder-slate-400" />
+            class="w-full pl-10 pr-4 py-1.5 bg-slate-100/80 rounded-full border-none text-sm focus:ring-2 focus:ring-accent focus:bg-white outline-none transition-all font-bold text-slate-600 placeholder-slate-400" />
         </div>
 
         <!-- 桌面端导航链接 (仅md及以上显示) -->
         <nav class="hidden md:flex items-center gap-1 z-10 shrink-0">
           <router-link to="/"
-            class="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-bold transition-all"
+            class="flex items-center gap-1.5 px-3.5 py-1 rounded-full text-sm font-bold transition-all"
             :class="route.path === '/' ? 'bg-cyan-50 text-[#0bc7cf]' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'">
             🏠 首页
           </router-link>
           <router-link to="/shop"
-            class="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-bold transition-all"
+            class="flex items-center gap-1.5 px-3.5 py-1 rounded-full text-sm font-bold transition-all"
             :class="route.path.startsWith('/shop') ? 'bg-cyan-50 text-[#0bc7cf]' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'">
             🛍️ 小卖部
           </router-link>
           <router-link to="/leaderboard"
-            class="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-bold transition-all"
+            class="flex items-center gap-1.5 px-3.5 py-1 rounded-full text-sm font-bold transition-all"
             :class="route.path.startsWith('/leaderboard') ? 'bg-cyan-50 text-[#0bc7cf]' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'">
             🏆 光荣榜
           </router-link>
           <router-link to="/settings"
-            class="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-bold transition-all"
+            class="flex items-center gap-1.5 px-3.5 py-1 rounded-full text-sm font-bold transition-all"
             :class="route.path.startsWith('/settings') ? 'bg-cyan-50 text-[#0bc7cf]' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'">
             ⚙️ 设置
           </router-link>
@@ -74,24 +74,24 @@
     </div>
     <div :style="{ height: `${topPanelHeight}px` }"></div>
 
-    <!-- 分组筛选栏 (极简高级圆角)只在首页展示 -->
-    <div v-if="classStore.groups.length && route.path === '/'" class="max-w-[1600px] 2xl:max-w-[1800px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 mb-4 relative z-40">
-      <div class="bg-white/60 backdrop-blur-md border border-white/80 rounded-full px-1.5 py-1.5 flex gap-1.5 overflow-x-auto shadow-sm w-full sm:w-auto">
+    <!-- 分组筛选栏 (极简高级圆角)只在首页展示，并且在分组管理模式下隐藏 -->
+    <div v-if="classStore.groups.length && route.path === '/' && !groupMode" class="max-w-[1600px] 2xl:max-w-[1800px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 mb-3 relative z-40">
+      <div class="bg-white/60 backdrop-blur-md border border-white/80 rounded-full px-1.5 py-1 flex gap-1 overflow-x-auto shadow-sm w-full sm:w-auto">
         <button @click="activeGroup = null; groupMode = false"
           :class="activeGroup === null ? 'bg-accent/10 text-accent font-extrabold' : 'text-slate-500 hover:bg-white/60'"
-          class="px-4 py-1.5 rounded-full text-[13px] font-bold whitespace-nowrap transition-all flex items-center gap-1.5">
+          class="px-3.5 py-1 rounded-full text-[13px] font-bold whitespace-nowrap transition-all flex items-center gap-1.5">
           <span>全部同学</span>
           <span v-if="activeGroup === null" class="text-[10px] bg-accent/20 px-1.5 py-0.5 rounded-full">{{ groupStats.allCount }}</span>
         </button>
         <button v-for="g in groupStats.groupsList" :key="g.id" @click="activeGroup = g.id; groupMode = false"
           :class="activeGroup === g.id ? 'bg-accent/10 text-accent font-extrabold' : 'text-slate-500 hover:bg-white/60'"
-          class="px-4 py-1.5 rounded-full text-[13px] font-bold whitespace-nowrap transition-all flex items-center gap-1.5">
+          class="px-3.5 py-1 rounded-full text-[13px] font-bold whitespace-nowrap transition-all flex items-center gap-1.5">
           <span>{{ g.name }}</span>
           <span v-if="activeGroup === g.id" class="text-[10px] bg-accent/20 px-1.5 py-0.5 rounded-full">{{ g.count }}</span>
         </button>
         <button @click="activeGroup = 'ungrouped'; groupMode = false"
           :class="activeGroup === 'ungrouped' ? 'bg-accent/10 text-accent font-extrabold' : 'text-slate-500 hover:bg-white/60'"
-          class="px-4 py-1.5 rounded-full text-[13px] font-bold whitespace-nowrap transition-all flex items-center gap-1.5">
+          class="px-3.5 py-1 rounded-full text-[13px] font-bold whitespace-nowrap transition-all flex items-center gap-1.5">
           <span>未分组</span>
           <span v-if="activeGroup === 'ungrouped'" class="text-[10px] bg-accent/20 px-1.5 py-0.5 rounded-full">{{ groupStats.ungroupedCount }}</span>
         </button>
@@ -199,7 +199,7 @@ const showMenu = ref(false)
 const showRandomPick = ref(false)
 const showTimer = ref(false)
 const topPanelRef = ref(null)
-const topPanelHeight = ref(136)
+const topPanelHeight = ref(120)
 let topPanelObserver = null
 
 function updateTopPanelHeight() {

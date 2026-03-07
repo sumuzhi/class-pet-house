@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+  <div class="fixed inset-0 bg-black/50 z-[1000] flex items-center justify-center p-4"
     @click.self="$emit('close')">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-5 sm:p-6
       animate-bounce-in text-center mx-4">

@@ -53,6 +53,30 @@
             class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-accent bg-gray-50 focus:bg-white transition font-mono tracking-wider" />
         </div>
 
+        <div class="bg-white rounded-2xl p-6 shadow-sm space-y-4 border-2 border-green-50">
+          <h3 class="text-lg font-bold text-gray-800 border-b pb-3 border-gray-100 flex items-center justify-between">
+            <span>🔗 家长纯净分享视图</span>
+            <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">免密围观</span>
+          </h3>
+          <p class="text-sm text-gray-500 mb-2">生成一个专属分享链接，发给家长群即可查看本班的最新宠物列表和排行榜。纯净模式下无编辑和评分功能，**家长无需注册登录**即可访问！</p>
+          
+          <div v-if="classStore.currentClass?.share_code" class="space-y-3 p-4 bg-slate-50 rounded-xl border border-slate-100">
+            <div class="flex flex-col sm:flex-row items-center gap-2">
+              <input :value="shareLink" readonly class="flex-1 w-full px-3 py-2 bg-white rounded-lg border border-slate-200 font-mono text-sm text-slate-600 outline-none select-all" />
+              <div class="flex gap-2 w-full sm:w-auto shrink-0 justify-end">
+                <button @click="copyShareLink" class="w-full sm:w-auto px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-bold shadow-sm transition active:scale-95">复制链接</button>
+              </div>
+            </div>
+            <div class="flex gap-2 pt-2 border-t border-slate-200 mt-2">
+               <button @click="generateShare" class="px-4 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg text-xs font-bold transition">🔁 重新生成分享码</button>
+               <button @click="disableShare" class="px-4 py-1.5 bg-red-50 border border-red-100 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold transition">⛔ 停用此链接</button>
+            </div>
+          </div>
+          <div v-else class="p-4 bg-slate-50 rounded-xl border border-slate-100 text-center">
+            <button @click="generateShare" class="px-6 py-3 bg-accent text-white rounded-xl text-sm font-black shadow-md hover:shadow-lg transition-all active:scale-95">🚀 点击生成专属分享链接</button>
+          </div>
+        </div>
+
         <button @click="saveSettings"
           class="w-full px-6 py-4 bg-accent text-white rounded-2xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 text-lg">
           <span>💾 保存当前全部基础设置</span>
@@ -249,7 +273,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useClassStore } from '../stores/class'
 import { useAuthStore } from '../stores/auth'
@@ -380,6 +404,46 @@ async function saveSettings() {
     await classStore.fetchClasses()
     Dialog.alert('基础配置保存成功！刷新或返回前台即可生效。')
   } catch (err) { Dialog.alert(err.error || '保存遇到网络故障') }
+}
+
+// === 分享连接管理 ===
+const shareLink = computed(() => {
+  return classStore.currentClass?.share_code ? `${window.location.origin}/share/${classStore.currentClass.share_code}` : ''
+})
+
+async function generateShare() {
+  try {
+    const res = await api.post(`/classes/${classStore.currentClass.id}/generate-share`)
+    // UI reactive update
+    if (classStore.currentClass) {
+       classStore.currentClass.share_code = res.share_code
+    }
+    await classStore.fetchClasses()
+    Dialog.alert('已生成全新的纯净分享链接！')
+  } catch (err) { Dialog.alert(err.error || '生成失败') }
+}
+
+async function disableShare() {
+  if (!(await Dialog.confirm('停用后，之前发给家长的所有链接都会立即失效。确定停用此班级的分享吗？'))) return
+  try {
+    await api.post(`/classes/${classStore.currentClass.id}/disable-share`)
+    // UI reactive update
+    if (classStore.currentClass) {
+       classStore.currentClass.share_code = null
+    }
+    await classStore.fetchClasses()
+    Dialog.alert('班级纯净分享已立刻关闭访问权限！')
+  } catch (err) { Dialog.alert(err.error || '关闭失败') }
+}
+
+async function copyShareLink() {
+  if (!shareLink.value) return
+  try {
+    await navigator.clipboard.writeText(shareLink.value)
+    Dialog.alert('✅ 分享链接已复制到剪贴板！快去发给家长群吧。')
+  } catch (err) {
+    Dialog.alert('复制失败，请手动全选文本框内容复制。')
+  }
 }
 
 // === 面板特权动作 ===

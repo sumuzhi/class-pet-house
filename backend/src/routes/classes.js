@@ -134,4 +134,33 @@ router.post('/copy-config', auth, requireActivated, async (req, res) => {
   }
 });
 
+const crypto = require('crypto');
+
+// 生成/重置班级分享码
+router.post('/:id/generate-share', auth, requireActivated, async (req, res) => {
+  try {
+    const cls = await Class.findOne({ where: { id: req.params.id, user_id: req.userId } });
+    if (!cls) return res.status(404).json({ error: '班级不存在' });
+
+    const shareCode = crypto.randomBytes(6).toString('hex');
+    await cls.update({ share_code: shareCode });
+    res.json({ share_code: shareCode });
+  } catch (err) {
+    res.status(500).json({ error: '生成分享码失败' });
+  }
+});
+
+// 关闭班级分享（清空分享码）
+router.post('/:id/disable-share', auth, requireActivated, async (req, res) => {
+  try {
+    const cls = await Class.findOne({ where: { id: req.params.id, user_id: req.userId } });
+    if (!cls) return res.status(404).json({ error: '班级不存在' });
+
+    await cls.update({ share_code: null });
+    res.json({ message: '已关闭分享' });
+  } catch (err) {
+    res.status(500).json({ error: '关闭分享失败' });
+  }
+});
+
 module.exports = router;

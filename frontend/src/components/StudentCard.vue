@@ -1,13 +1,16 @@
 <template>
   <div
-    class="relative rounded-xl sm:rounded-2xl p-2 sm:p-4 flex flex-col cursor-pointer transition-all duration-300 group overflow-hidden"
+    class="relative rounded-xl sm:rounded-2xl p-2 sm:p-4 flex flex-col transition-all duration-300 group overflow-hidden"
     :class="{
-      'ring-4 ring-accent bg-theme-light scale-[0.98] opacity-90': batchMode && selected,
+      'cursor-pointer': !readOnly,
+      'cursor-default': readOnly,
+      'ring-4 ring-accent bg-theme-light scale-[0.98] opacity-90 animate-pulse': batchMode && selected,
       'border-2 border-dashed border-gray-300 bg-white/50 hover:bg-white opacity-70 hover:opacity-100': batchMode && !selected,
-      'ring-4 ring-accent bg-white shadow-xl shadow-accent/20 scale-[1.02] z-10': !batchMode && selected,
-      'bg-white border-2 border-sky-100 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.08)] hover:border-sky-200 hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.12)] hover:-translate-y-1': !batchMode && !selected
+      'bg-white animate-card-breathe': !batchMode && selected,
+      'bg-white border-2 border-sky-100 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.08)] hover:border-sky-200 hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.12)] hover:-translate-y-1': !batchMode && !selected && !readOnly,
+      'bg-white border-2 border-slate-100 shadow-sm': !batchMode && !selected && readOnly
     }"
-    @click="$emit(batchMode ? 'select' : 'click')"
+    @click="!readOnly && $emit(batchMode ? 'select' : 'click')"
   >
     <!-- 批量选择勾选框 -->
     <div v-if="batchMode" class="absolute top-2 right-2 sm:top-3 sm:right-3 w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center transition-all z-40"
@@ -23,20 +26,20 @@
       </div>
       <div v-else></div>
       
-      <div v-if="student.pet_type && !batchMode" class="flex gap-1">
-        <button class="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center bg-slate-100/90 rounded-full text-[10px] sm:text-xs text-slate-400 hover:text-sky-500 hover:bg-sky-50 transition-all active:scale-90" title="保存收集卡"
+      <div v-if="student.pet_type && !batchMode && !readOnly" class="flex gap-1">
+        <button class="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center bg-slate-100/90 rounded-full text-[10px] sm:text-xs text-slate-400 hover:text-sky-500 hover:bg-sky-50 transition-all active:scale-90 pointer-events-auto" title="保存收集卡"
           @click.stop="$emit('print-cert')">🖨️</button>
-        <button class="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center bg-violet-50 rounded-full text-[10px] sm:text-xs text-violet-400 hover:text-violet-600 hover:bg-violet-100 transition-all active:scale-90" title="AI评语"
+        <button class="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center bg-violet-50 rounded-full text-[10px] sm:text-xs text-violet-400 hover:text-violet-600 hover:bg-violet-100 transition-all active:scale-90 pointer-events-auto" title="AI评语"
           @click.stop="$emit('ai-evaluate')">✨</button>
-        <button class="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center bg-slate-100/90 rounded-full text-[10px] sm:text-xs text-slate-400 hover:text-accent hover:bg-red-50 transition-all active:scale-90" title="更换宠物"
+        <button class="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center bg-slate-100/90 rounded-full text-[10px] sm:text-xs text-slate-400 hover:text-accent hover:bg-red-50 transition-all active:scale-90 pointer-events-auto" title="更换宠物"
           @click.stop="$emit('change-pet')">🔄</button>
       </div>
     </div>
 
     <!-- 宠物图片区 -->
     <div class="flex justify-center items-center relative my-1 sm:my-3 h-28 sm:h-40 md:h-44">
-      <div v-if="!student.pet_type" class="w-14 h-14 sm:w-28 sm:h-28 flex items-center justify-center text-3xl sm:text-5xl bg-slate-50/60 rounded-full border border-slate-100">
-        🥚
+      <div v-if="!student.pet_type" class="w-16 h-16 sm:w-28 sm:h-28 flex items-center justify-center text-2xl sm:text-5xl bg-slate-50 text-slate-300 font-bold rounded-full border border-slate-100 shadow-inner">
+        {{ student.name ? student.name.charAt(0) : '' }}
       </div>
       <div v-else class="relative w-full h-full flex justify-center items-center animate-float-idle">
         <img v-if="petImageUrl" :src="petImageUrl" :alt="student.pet_name || '宠物'"
@@ -81,14 +84,14 @@
       <div class="flex items-center gap-0.5 text-slate-400 min-w-0">
         <span class="text-[10px] sm:text-xs opacity-60">👥</span><span class="truncate max-w-[3.5rem] sm:max-w-[5rem]">{{ groupName || '未分组' }}</span>
       </div>
-      <div class="flex items-center gap-0.5 text-slate-400 cursor-pointer hover:text-amber-500 transition-colors" @click.stop="$emit('show-badges')">
+      <div class="flex items-center gap-0.5 text-slate-400 transition-colors" :class="readOnly ? '' : 'cursor-pointer hover:text-amber-500 pointer-events-auto'" @click.stop="!readOnly && $emit('show-badges')">
         <span class="text-[10px] sm:text-xs">🏅</span><span><OdometerNumber :value="student.badges ? student.badges.length : 0" /></span>
       </div>
     </div>
 
     <!-- 满级毕业按钮 -->
-    <button v-if="isMaxLevel"
-      class="mt-1.5 sm:mt-2 w-full py-1.5 sm:py-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-white rounded-lg sm:rounded-xl text-[10px] sm:text-sm font-bold shadow-md hover:from-yellow-500 hover:to-amber-600 active:scale-95 transition-all z-20"
+    <button v-if="isMaxLevel && !readOnly"
+      class="mt-1.5 sm:mt-2 w-full py-1.5 sm:py-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-white rounded-lg sm:rounded-xl text-[10px] sm:text-sm font-bold shadow-md hover:from-yellow-500 hover:to-amber-600 active:scale-95 transition-all z-20 pointer-events-auto"
       @click.stop="$emit('graduate')">
       ✨ 召唤守护兽
     </button>
@@ -114,6 +117,10 @@ const props = defineProps({
   batchMode: Boolean,
   undoMode: Boolean,
   selected: Boolean,
+  readOnly: {
+    type: Boolean,
+    default: false
+  },
   growthStages: Array
 })
 

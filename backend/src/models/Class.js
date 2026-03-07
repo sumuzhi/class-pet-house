@@ -11,7 +11,8 @@ const Class = sequelize.define('Class', {
     type: DataTypes.JSON,
     defaultValue: [0, 5, 10, 20, 30, 45, 60, 75, 90, 100]
   },
-  sort_order: { type: DataTypes.INTEGER, defaultValue: 0 }
+  sort_order: { type: DataTypes.INTEGER, defaultValue: 0 },
+  share_code: { type: DataTypes.STRING(20), unique: true, allowNull: true }
 }, { tableName: 'classes' });
 
 module.exports = Class;

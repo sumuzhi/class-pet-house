@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4" @click.self="$emit('close')">
+  <div class="fixed inset-0 bg-black/30 z-[1000] flex items-center justify-center p-4" @click.self="$emit('close')">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-5 max-h-[80vh] overflow-y-auto">
       <h3 class="text-center font-bold text-gray-700 mb-1">🏅 {{ student.name }} 的徽章墙</h3>
       <p class="text-center text-xs text-gray-400 mb-4">

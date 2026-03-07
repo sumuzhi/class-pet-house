@@ -16,6 +16,15 @@ const routes = [
       { path: 'history', name: 'History', component: () => import('../views/HistoryView.vue') },
       { path: 'shop', name: 'Shop', component: () => import('../views/Shop.vue') },
     ]
+  },
+  {
+    path: '/share/:share_code',
+    component: () => import('../layouts/ShareLayout.vue'),
+    meta: { requiresAuth: false },
+    children: [
+      { path: '', name: 'ShareHome', component: () => import('../views/ShareHome.vue') },
+      { path: 'leaderboard', name: 'ShareLeaderboard', component: () => import('../views/ShareLeaderboard.vue') }
+    ]
   }
 ]
 

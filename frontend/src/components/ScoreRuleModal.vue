@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed inset-0 bg-slate-900/40 z-50 flex items-center justify-center p-3 sm:p-4 backdrop-blur-sm" @click.self="$emit('close')">
+  <div class="fixed inset-0 bg-slate-900/40 z-[1000] flex items-center justify-center p-3 sm:p-4 backdrop-blur-sm" @click.self="$emit('close')">
     <div class="bg-white rounded-[1.8rem] shadow-2xl w-full max-w-[480px] p-5 sm:p-6 max-h-[92vh] flex flex-col relative overflow-hidden animate-slide-up-fade">
       
       <!-- 头部 -->

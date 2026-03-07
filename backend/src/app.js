@@ -40,6 +40,7 @@ const exportRoutes = require('./routes/export');
 const adminRoutes = require('./routes/admin');
 const { router: syncRouter } = require('./routes/sync');
 const aiRoutes = require('./routes/ai');
+const publicRoutes = require('./routes/public');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/classes', classRoutes);
@@ -52,6 +53,7 @@ app.use('/api/export', exportRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/sync', syncRouter);
 app.use('/api/ai', aiRoutes);
+app.use('/api/public', publicRoutes);
 
 // 健康检查
 app.get('/api/health', (req, res) => {

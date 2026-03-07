@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4" @click.self="$emit('close')">
+  <div class="fixed inset-0 bg-black/30 z-[1000] flex items-center justify-center p-4" @click.self="$emit('close')">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
       <h2 class="text-lg font-bold text-gray-700 mb-4">📚 班级管理</h2>
 

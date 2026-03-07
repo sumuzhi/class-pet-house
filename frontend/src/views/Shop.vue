@@ -1,22 +1,28 @@
 <template>
-  <div class="max-w-6xl mx-auto">
-    <h2 class="text-xl font-bold text-gray-700 mb-4">🛍️ 小卖部</h2>
+  <div class="max-w-6xl mx-auto relative pb-20">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-xl font-bold text-gray-700 m-0">🛍️ 小卖部</h2>
+      <button @click="showAddItemModal = true"
+        class="px-4 py-2 bg-slate-800 text-white font-bold rounded-xl text-sm shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all active:scale-95 flex items-center gap-1">
+        <span class="text-base leading-none">➕</span> 添加商品
+      </button>
+    </div>
 
     <!-- 商品列表 -->
-    <div class="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 mb-8">
       <div v-for="(item, i) in items" :key="item.id"
-        class="group bg-white/90 backdrop-blur-md rounded-[1.8rem] p-5 shadow-sm text-center border-2 border-white hover:border-[var(--theme-ring)]/40 hover:shadow-[0_15px_35px_-10px_var(--theme-ring)] hover:-translate-y-1 transition-all duration-300 animate-stagger-fade-in flex flex-col items-center"
+        class="group bg-white/90 backdrop-blur-md rounded-2xl sm:rounded-[1.8rem] p-3 sm:p-5 shadow-sm text-center border-2 border-white hover:border-[var(--theme-ring)]/40 hover:shadow-[0_15px_35px_-10px_var(--theme-ring)] hover:-translate-y-1 transition-all duration-300 animate-stagger-fade-in flex flex-col items-center"
         :style="{ animationDelay: `${i * 0.05}s` }">
         
         <!-- Icon Squircle -->
-        <div class="w-16 h-16 rounded-[1.2rem] bg-slate-50 flex items-center justify-center text-4xl mb-3 shadow-inner group-hover:scale-110 transition-transform duration-300 group-hover:bg-theme-light">
+        <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-[1.2rem] bg-slate-50 flex items-center justify-center text-3xl sm:text-4xl mb-2 sm:mb-3 shadow-inner group-hover:scale-110 transition-transform duration-300 group-hover:bg-theme-light">
           {{ item.icon }}
         </div>
         
-        <p class="text-base font-black text-slate-700 tracking-wide">{{ item.name }}</p>
-        <p class="text-xs font-bold text-slate-400 mt-1 h-8 line-clamp-2">{{ item.description }}</p>
+        <p class="text-sm sm:text-base font-black text-slate-700 tracking-wide">{{ item.name }}</p>
+        <p class="text-[10px] sm:text-xs font-bold text-slate-400 mt-1 h-8 line-clamp-2 leading-tight">{{ item.description }}</p>
         
-        <div class="mt-3 px-3 py-1 rounded-full bg-orange-50 text-orange-600 font-black text-sm border border-orange-100 flex items-center gap-1">
+        <div class="mt-2 sm:mt-3 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full bg-orange-50 text-orange-600 font-black text-xs sm:text-sm border border-orange-100 flex items-center gap-1">
           <span class="text-[12px]">🏅</span> {{ item.price }}
         </div>
         
@@ -56,16 +62,31 @@
       </div>
     </div>
 
-    <!-- 商品管理 -->
-    <div class="bg-white/90 backdrop-blur-md rounded-[2rem] p-6 shadow-sm border-2 border-white mb-6">
-      <h3 class="font-black text-slate-700 mb-4 text-lg">⚙️ 商品管理</h3>
-      <div class="flex flex-col sm:flex-row gap-3">
-        <input v-model="newItem.name" placeholder="商品名称"
-          class="flex-1 px-4 py-3 rounded-2xl border-2 border-slate-100 text-sm font-bold text-slate-600 outline-none focus:border-accent focus:bg-white transition-colors bg-slate-50" />
-        <input v-model.number="newItem.price" type="number" placeholder="价格(徽章)" min="1"
-          class="w-full sm:w-32 px-4 py-3 rounded-2xl border-2 border-slate-100 text-sm font-bold text-slate-600 outline-none focus:border-accent focus:bg-white transition-colors bg-slate-50" />
-        <button @click="addItem"
-          class="px-6 py-3 bg-slate-800 text-white font-black rounded-2xl text-sm hover:bg-slate-700 hover:shadow-lg border-2 border-slate-800 hover:-translate-y-0.5 transition-all active:scale-95 whitespace-nowrap">➕ 添加商品</button>
+    <!-- 添加商品弹窗 -->
+    <div v-if="showAddItemModal" class="fixed inset-0 bg-black/40 z-[60] flex items-end sm:items-center justify-center pointer-events-auto pb-[calc(5rem+env(safe-area-inset-bottom))] sm:pb-0"
+      @click.self="showAddItemModal = false">
+      <div class="bg-white rounded-t-3xl sm:rounded-2xl shadow-xl w-full sm:max-w-sm flex flex-col overflow-hidden animate-slide-up sm:animate-fade-in">
+        <div class="bg-slate-50 px-5 py-4 flex items-center justify-between border-b border-slate-100">
+          <h3 class="font-black text-slate-700 text-lg">⚙️ 添加商品</h3>
+          <button @click="showAddItemModal = false" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 font-bold transition-colors">✕</button>
+        </div>
+        
+        <div class="p-5 flex flex-col gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 mb-1.5 ml-1">名称</label>
+            <input v-model="newItem.name" placeholder="例如: 扫地免责券" autofocus
+              class="w-full px-4 py-3 rounded-xl border-2 border-slate-100 text-sm font-bold text-slate-700 outline-none focus:border-accent focus:bg-white transition-colors bg-slate-50" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 mb-1.5 ml-1">价格 (徽章数量)</label>
+            <input v-model.number="newItem.price" type="number" placeholder="1" min="1"
+              class="w-full px-4 py-3 rounded-xl border-2 border-slate-100 text-sm font-bold text-slate-700 outline-none focus:border-accent focus:bg-white transition-colors bg-slate-50" />
+          </div>
+          <button @click="addItem"
+            class="mt-2 w-full py-3 bg-slate-800 text-white font-black rounded-xl text-sm shadow-md hover:bg-slate-700 hover:shadow-lg transition-all active:scale-95">
+            确认添加
+          </button>
+        </div>
       </div>
     </div>
 
@@ -93,10 +114,16 @@ const items = ref([])
 const records = ref([])
 const newItem = reactive({ name: '', price: 1 })
 const showExchangeModal = ref(false)
+const showAddItemModal = ref(false)
 const exchangeTarget = ref(null)
 
-// ESC 关闭兑换弹窗
-function onEsc(e) { if (e.key === 'Escape') showExchangeModal.value = false }
+// ESC 关闭弹窗
+function onEsc(e) { 
+  if (e.key === 'Escape') {
+    showExchangeModal.value = false
+    showAddItemModal.value = false
+  }
+}
 onMounted(() => window.addEventListener('keydown', onEsc))
 onUnmounted(() => window.removeEventListener('keydown', onEsc))
 
@@ -110,7 +137,10 @@ watch(() => classStore.currentClass, async (newClass) => {
 }, { immediate: true })
 
 async function addItem() {
-  if (!newItem.name) return
+  if (!newItem.name) {
+    Dialog.alert('请输入商品名称')
+    return
+  }
   try {
     const item = await api.post('/shop', {
       class_id: classStore.currentClass.id,
@@ -120,6 +150,7 @@ async function addItem() {
     items.value.push(item)
     newItem.name = ''
     newItem.price = 1
+    showAddItemModal.value = false
   } catch (err) { Dialog.alert(err.error || '添加失败') }
 }
 

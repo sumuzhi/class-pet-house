@@ -219,14 +219,35 @@ body::after {
   }
 
   50% {
-    transform: scale(1.08);
-    /* Increased from 1.04 for more obvious breathing */
+    transform: scale(1.15);
+    /* Increased from 1.08 for more obvious breathing */
   }
 }
 
 .animate-breathe {
-  animation: breathe 2.5s ease-in-out infinite;
-  /* Slightly faster too */
+  animation: breathe 2s ease-in-out infinite;
+  /* Faster and more pronounced */
+}
+
+/* 选择状态的卡片呼吸灯特效 */
+@keyframes card-breathe {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px var(--theme-ring), 0 10px 25px -5px rgba(125, 211, 252, 0.3);
+    transform: scale(1.02);
+  }
+
+  50% {
+    box-shadow: 0 0 0 6px var(--accent), 0 20px 35px -5px rgba(125, 211, 252, 0.6);
+    transform: scale(1.035);
+  }
+}
+
+.animate-card-breathe {
+  animation: card-breathe 2s ease-in-out infinite;
+  border-color: var(--accent) !important;
+  z-index: 20;
 }
 
 /* 瀑布流顺滑入场动效 */

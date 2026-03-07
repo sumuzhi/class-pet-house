@@ -1,5 +1,5 @@
 <template>
-  <div v-if="show" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm print:bg-white print:backdrop-blur-none" @click="close">
+  <div v-if="show" class="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm print:bg-white print:backdrop-blur-none" @click="close">
     
     <!-- 模态框主体 -->
     <div class="relative w-[95vw] sm:w-[90vw] max-w-4xl m-4 flex flex-col items-center" @click.stop>

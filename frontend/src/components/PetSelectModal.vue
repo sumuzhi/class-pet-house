@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center" @click.self="$emit('close')">
+  <div class="fixed inset-0 bg-black/40 z-[1000] flex items-end sm:items-center justify-center" @click.self="$emit('close')">
     <div class="bg-white rounded-t-3xl sm:rounded-2xl shadow-xl w-full sm:max-w-3xl max-h-[92vh] sm:max-h-[85vh] flex flex-col overflow-hidden">
       
       <!-- 渐变头部 -->
@@ -18,27 +18,36 @@
       <!-- 可滚动内容区 -->
       <div class="flex-1 overflow-y-auto min-h-0 p-4 sm:p-5">
         <!-- 起名输入框 -->
-        <div v-if="selectedPet" class="text-center py-4 h-full flex flex-col items-center justify-center">
-          <div class="relative w-full aspect-square bg-sky-50 rounded-2xl flex items-center justify-center p-4 mb-4">
-            <img :src="getPetImageUrl(selectedPet.folder, 1)" class="w-40 h-40 sm:w-56 sm:h-56 mx-auto object-contain drop-shadow-2xl" />
+        <div v-if="selectedPet" class="h-full flex flex-col min-h-0">
+          <!-- Image area: Flex-1 takes remaining space and shrinks, min-h-0 prevents it from pushing container beyond height -->
+          <div class="flex-1 min-h-0 flex items-center justify-center p-2 sm:p-4 shrink">
+            <div class="relative w-full h-full bg-sky-50 rounded-2xl flex items-center justify-center p-4">
+              <img :src="getPetImageUrl(selectedPet.folder, 1)" class="max-w-full max-h-full w-auto h-auto object-contain drop-shadow-2xl" />
+            </div>
           </div>
-          <p class="text-lg sm:text-xl font-black text-gray-800 mb-3">已选：{{ selectedPet.name }}</p>
-          <div class="flex items-center justify-center gap-2 w-full max-w-sm mx-auto mb-4">
-            <input v-model="petName" type="text" :placeholder="`给${selectedPet.name}起个名`"
-              maxlength="20" @keyup.enter="confirmSelect" :disabled="isAiLoading"
-              class="flex-1 min-w-0 px-4 py-3 rounded-xl border-2 border-slate-200 text-lg outline-none focus:border-purple-400 text-center font-bold disabled:bg-slate-50 disabled:text-slate-400" />
-            <button @click="generateAiName" :disabled="isAiLoading" 
-              class="shrink-0 px-4 py-3 bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 border border-purple-200 rounded-xl text-sm font-bold text-purple-600 transition-all active:scale-95 flex items-center gap-1 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed" title="AI智能起名">
-              <span v-if="isAiLoading" class="animate-spin inline-block w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full"></span>
-              <span v-else class="text-lg leading-none">✨</span>
-              {{ isAiLoading ? '构思中...' : 'AI起名' }}
-            </button>
-          </div>
-          <div class="flex gap-2 justify-center">
-            <button @click="selectedPet = null"
-              class="px-5 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm font-bold hover:bg-gray-200">重选</button>
-            <button @click="confirmSelect"
-              class="px-5 py-2 bg-gradient-to-r from-purple-500 to-fuchsia-500 text-white rounded-xl text-sm font-bold hover:shadow-lg">确认领养</button>
+          
+          <!-- Bottom controls: strictly no wrapping, no shrinking -->
+          <div class="shrink-0 flex flex-col items-center pb-2 px-2">
+            <p class="text-base sm:text-xl font-black text-gray-800 mb-2 sm:mb-3">已选：{{ selectedPet.name }}</p>
+            
+            <div class="flex items-center justify-center gap-2 w-full max-w-sm mx-auto mb-3 sm:mb-4">
+              <input v-model="petName" type="text" :placeholder="`给${selectedPet.name}起个名`"
+                maxlength="20" @keyup.enter="confirmSelect" :disabled="isAiLoading"
+                class="flex-1 min-w-0 px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 border-slate-200 text-sm sm:text-lg outline-none focus:border-purple-400 text-center font-bold disabled:bg-slate-50 disabled:text-slate-400" />
+              <button @click="generateAiName" :disabled="isAiLoading" 
+                class="shrink-0 px-3 py-2 sm:px-4 sm:py-3 bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 border border-purple-200 rounded-xl text-xs sm:text-sm font-bold text-purple-600 transition-all active:scale-95 flex items-center gap-1 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed" title="AI智能起名">
+                <span v-if="isAiLoading" class="animate-spin inline-block w-3 h-3 sm:w-4 sm:h-4 border-2 border-purple-600 border-t-transparent rounded-full"></span>
+                <span v-else class="text-base sm:text-lg leading-none">✨</span>
+                <span class="hidden min-[360px]:inline">{{ isAiLoading ? '构思中...' : 'AI起名' }}</span>
+              </button>
+            </div>
+            
+            <div class="flex gap-2 justify-center">
+              <button @click="selectedPet = null"
+                class="px-4 py-1.5 sm:px-5 sm:py-2 bg-gray-100 text-gray-600 rounded-xl text-xs sm:text-sm font-bold hover:bg-gray-200 transition-colors">重选</button>
+              <button @click="confirmSelect"
+                class="px-4 py-1.5 sm:px-5 sm:py-2 bg-gradient-to-r from-purple-500 to-fuchsia-500 text-white rounded-xl text-xs sm:text-sm font-bold hover:shadow-lg transition-all active:scale-95">确认领养</button>
+            </div>
           </div>
         </div>
 
@@ -46,8 +55,14 @@
         <div v-else class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 sm:gap-3">
           <button v-for="pet in filteredPets" :key="pet.id"
             @click="selectedPet = pet"
-            class="flex flex-col items-center p-2 sm:p-3 rounded-xl border-2 border-slate-100 bg-white hover:border-purple-300 hover:bg-purple-50/50 transition-all active:scale-95 group">
-            <div class="w-16 h-16 sm:w-20 sm:h-20 mx-auto my-2 p-1 sm:p-2 bg-gradient-to-br from-white to-sky-50 rounded-xl relative overflow-hidden flex items-center justify-center">
+            class="relative flex flex-col items-center p-2 sm:p-3 rounded-xl border-2 border-slate-100 bg-white hover:border-purple-300 hover:bg-purple-50/50 transition-all active:scale-95 group overflow-hidden">
+            
+            <!-- Index Badge -->
+            <div class="absolute top-0 left-0 bg-slate-100 text-slate-400 text-[10px] font-black px-1.5 py-0.5 rounded-br-lg z-10 group-hover:bg-purple-100 group-hover:text-purple-600 transition-colors">
+              NO.{{ pets.indexOf(pet) + 1 }}
+            </div>
+
+            <div class="w-16 h-16 sm:w-20 sm:h-20 mx-auto my-2 p-1 sm:p-2 bg-gradient-to-br from-white to-sky-50 rounded-xl relative overflow-hidden flex items-center justify-center mt-3">
               <img :src="getPetImageUrl(pet.folder, 1)" :alt="pet.name" class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300" />
             </div>
             <span class="text-xs sm:text-sm font-bold text-slate-600 mt-1">{{ pet.name }}</span>

@@ -1,5 +1,5 @@
 <template>
-  <div v-if="show" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm" @click="$emit('close')">
+  <div v-if="show" class="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm" @click="$emit('close')">
     <div class="relative w-[92vw] sm:w-[600px] max-h-[85vh] bg-white rounded-2xl shadow-2xl p-5 sm:p-6 m-4 flex flex-col" @click.stop>
       
       <!-- 标题 -->
