@@ -1,9 +1,9 @@
 <template>
   <div class="max-w-6xl mx-auto flex flex-col md:flex-row gap-6 items-start pb-20">
     
-    <!-- 左侧固定的菜单导航 -->
-    <div class="w-full md:w-64 bg-white rounded-2xl p-4 shadow-sm flex-shrink-0 md:sticky md:top-6">
-      <h2 class="text-xl font-bold text-gray-800 mb-4 px-2">⚙️ 系统设置</h2>
+    <!-- 左侧/顶部 固定的菜单导航 -->
+    <div class="w-full md:w-64 bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-sm flex-shrink-0 sticky top-20 md:top-6 z-30">
+      <h2 class="text-xl font-bold text-gray-800 mb-4 px-2 hidden md:block">⚙️ 系统设置</h2>
       <nav class="flex flex-row md:flex-col gap-2 overflow-x-auto scrollbar-hide pb-2 md:pb-0">
         <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
           class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors whitespace-nowrap outline-none"

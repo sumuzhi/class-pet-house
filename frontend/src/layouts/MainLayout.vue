@@ -74,8 +74,8 @@
     </div>
     <div :style="{ height: `${topPanelHeight}px` }"></div>
 
-    <!-- 分组筛选栏 (极简高级圆角) -->
-    <div v-if="classStore.groups.length" class="max-w-[1600px] 2xl:max-w-[1800px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 mb-4 relative z-40">
+    <!-- 分组筛选栏 (极简高级圆角)只在首页展示 -->
+    <div v-if="classStore.groups.length && route.path === '/'" class="max-w-[1600px] 2xl:max-w-[1800px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 mb-4 relative z-40">
       <div class="bg-white/60 backdrop-blur-md border border-white/80 rounded-full px-1.5 py-1.5 flex gap-1.5 overflow-x-auto shadow-sm w-full sm:w-auto">
         <button @click="activeGroup = null; groupMode = false"
           :class="activeGroup === null ? 'bg-accent/10 text-accent font-extrabold' : 'text-slate-500 hover:bg-white/60'"
