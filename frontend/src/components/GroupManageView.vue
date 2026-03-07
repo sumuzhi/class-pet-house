@@ -261,8 +261,14 @@ async function deleteGroup(group) {
 <style scoped>
 /* Toy UI Styling for Students */
 .student-token {
-  @apply flex items-center bg-white border-4 border-slate-900 rounded-[1.5rem] px-3 sm:px-4 py-3 cursor-grab active:cursor-grabbing select-none transition-transform;
+  @apply flex items-center bg-white border-4 border-slate-900 rounded-[1.5rem] cursor-grab active:cursor-grabbing select-none transition-transform;
+  padding: 0.75rem 0.75rem;
   box-shadow: 4px 4px 0 0 #0f172a;
+}
+@media (min-width: 640px) {
+  .student-token {
+    padding: 0.75rem 1rem;
+  }
 }
 .student-token:hover {
   transform: translateY(-2px);
