@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-0 md:p-4"
+  <div class="fixed inset-0 bg-black/40 z-[1000] flex items-end sm:items-center justify-center p-0 md:p-4"
     @click.self="$emit('close')">
     <div class="bg-white rounded-t-3xl sm:rounded-2xl shadow-xl w-full max-w-lg max-h-[75vh] sm:max-h-[80vh] flex flex-col overflow-hidden animate-bounce-in">
       
@@ -21,11 +21,11 @@
       </div>
 
       <!-- 底部按钮区 -->
-      <div class="shrink-0 p-4 sm:p-5 bg-white border-t border-slate-100 flex gap-3 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:pb-5">
+      <div class="shrink-0 p-3 sm:p-5 bg-white border-t border-slate-100 flex gap-3 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:pb-5">
         <button @click="$emit('close')"
-          class="px-6 py-3 bg-slate-100/80 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-colors">取消</button>
+          class="px-5 py-2.5 sm:py-3 bg-slate-100/80 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-colors">取消</button>
         <button @click="handleAdd" :disabled="loading"
-          class="flex-1 py-3 bg-gradient-to-r from-accent to-indigo-500 text-white rounded-xl font-bold shadow-md shadow-accent/30 hover:-translate-y-0.5 active:scale-95 transition-all outline-none disabled:opacity-50 disabled:translate-y-0 disabled:active:scale-100 disabled:shadow-none">
+          class="flex-1 py-2.5 sm:py-3 bg-gradient-to-r from-accent to-indigo-500 text-white rounded-xl font-bold shadow-md shadow-accent/30 hover:-translate-y-0.5 active:scale-95 transition-all outline-none min-h-[44px]">
           <span v-if="loading" class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></span>
           {{ loading ? '正在导入数据...' : '✨ 确认导入名单' }}
         </button>
