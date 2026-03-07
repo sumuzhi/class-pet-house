@@ -7,35 +7,35 @@
         <div class="absolute -left-10 -top-10 w-24 h-24 bg-cyan-400 rounded-full blur-[40px] opacity-20 pointer-events-none"></div>
 
         <!-- 第一行: 左侧班级 & 右侧操作 -->
-        <div class="flex items-center justify-between gap-2 z-10 min-w-0">
-          <button @click="showClassModal = true" class="group max-w-full flex items-center gap-2 text-slate-700 font-bold bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-full transition-colors border border-slate-100">
-            <span class="text-lg drop-shadow-sm">🐾</span> 
-            <span class="text-sm font-bold tracking-wide truncate max-w-[9rem] sm:max-w-[18rem] md:max-w-[24rem]">{{ classStore.currentClass?.name || '默认班级' }}</span>
-            <span class="text-[10px] text-slate-400">▼</span>
+        <div class="flex items-center justify-between gap-1 sm:gap-2 z-10 min-w-0 w-full">
+          <button @click="showClassModal = true" class="group flex shrink min-w-0 items-center gap-1 sm:gap-2 text-slate-700 font-bold bg-slate-50 hover:bg-slate-100 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full transition-colors border border-slate-100">
+            <span class="text-base sm:text-lg drop-shadow-sm shrink-0">🐾</span> 
+            <span class="text-xs sm:text-sm font-bold tracking-wide truncate max-w-[4.5rem] min-[375px]:max-w-[7rem] sm:max-w-[18rem] md:max-w-[24rem]">{{ classStore.currentClass?.name || '默认班级' }}</span>
+            <span class="text-[10px] text-slate-400 shrink-0">▼</span>
           </button>
 
           <!-- 功能按钮 -->
-          <div v-if="route.path === '/'" class="flex shrink-0 items-center justify-end gap-1.5">
+          <div v-if="route.path === '/'" class="flex shrink-0 items-center justify-end gap-1 sm:gap-1.5 pl-1 ml-auto">
             <button @click="batchMode = !batchMode; if (batchMode) groupMode = false"
-              class="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-colors border"
+              class="flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-sm font-bold transition-colors border"
               :class="batchMode ? 'bg-accent text-white border-accent shadow-md shadow-accent/20' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 shadow-sm'">
               <span class="text-sm sm:text-base text-[#0bc7cf]" :class="batchMode ? '!text-white' : ''">👥</span>
               <span class="hidden min-[400px]:inline">批量</span>
             </button>
             <button @click="groupMode = !groupMode; if (groupMode) batchMode = false"
-              class="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-colors border"
+              class="flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-sm font-bold transition-colors border"
               :class="groupMode ? 'bg-purple-500 text-white border-purple-500 shadow-md shadow-purple-500/20' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 shadow-sm'">
               <span class="text-sm sm:text-base" :class="groupMode ? 'text-white' : 'text-purple-400'">📋</span>
               <span class="hidden min-[400px]:inline">分组</span>
             </button>
             <div class="relative shrink-0">
-              <select v-model="sortMode" class="appearance-none bg-sky-50 text-sky-600 border border-sky-100 rounded-full pl-2.5 sm:pl-3 pr-6 py-1.5 text-xs sm:text-sm font-bold outline-none cursor-pointer hover:bg-sky-100 transition-colors shadow-sm h-full flex items-center w-[6.6rem] sm:w-auto">
-                <option value="manual">⇅ 排序</option>
-                <option value="name">姓名字典</option>
-                <option value="food">积分食物</option>
-                <option value="progress">等级进度</option>
+              <select v-model="sortMode" class="appearance-none bg-sky-50 text-sky-600 border border-sky-100 rounded-full pl-2 sm:pl-3 pr-4 sm:pr-6 py-1 sm:py-1.5 text-[11px] sm:text-sm font-bold outline-none cursor-pointer hover:bg-sky-100 transition-colors shadow-sm h-full flex items-center w-[4.5rem] sm:w-auto">
+                <option value="manual">排序 ⇅</option>
+                <option value="name">字典</option>
+                <option value="food">食物</option>
+                <option value="progress">进度</option>
               </select>
-              <span class="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[8px] text-sky-400">▼</span>
+              <span class="pointer-events-none absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 text-[8px] text-sky-400">▼</span>
             </div>
           </div>
         </div>

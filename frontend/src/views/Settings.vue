@@ -4,11 +4,11 @@
     <!-- 左侧/顶部 固定的菜单导航 -->
     <div class="w-full md:w-64 bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-sm flex-shrink-0 sticky top-[90px] md:top-[110px] z-30 self-start">
       <h2 class="text-xl font-bold text-gray-800 mb-4 px-2 hidden md:block">⚙️ 系统设置</h2>
-      <nav class="flex flex-row md:flex-col gap-2 overflow-x-auto scrollbar-hide pb-2 md:pb-0">
+      <nav class="flex flex-row md:flex-col gap-1.5 md:gap-2 overflow-x-auto scrollbar-hide pb-2 md:pb-0">
         <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
-          class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors whitespace-nowrap outline-none"
+          class="flex items-center gap-1.5 md:gap-3 px-3 md:px-4 py-2 md:py-3 rounded-xl font-medium transition-colors whitespace-nowrap outline-none text-sm md:text-base"
           :class="activeTab === tab.id ? 'bg-accent text-white shadow-md' : 'text-gray-600 hover:bg-gray-100'">
-          <span class="text-lg">{{ tab.icon }}</span>
+          <span class="text-base md:text-lg">{{ tab.icon }}</span>
           <span>{{ tab.name }}</span>
         </button>
       </nav>
