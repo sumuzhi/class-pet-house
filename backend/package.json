@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
+    "db:migrate": "node src/migrate.js",
     "upload:cos": "node upload-cos.js"
   },
   "keywords": [],
