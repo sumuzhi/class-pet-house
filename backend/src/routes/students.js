@@ -30,16 +30,28 @@ router.post('/', auth, requireActivated, async (req, res) => {
     // 批量添加
     if (names && Array.isArray(names)) {
       if (names.length > 200) return res.status(400).json({ error: '单次最多添加200名学生' });
-      // 过滤非字符串元素
-      const validNames = names.filter(n => typeof n === 'string' && n.trim() && n.trim().length <= 50);
-      const existing = await Student.findAll({ where: { class_id }, attributes: ['name'] });
-      const existingNames = new Set(existing.map(s => s.name));
-      const total = existing.length;
-      if (total + validNames.length > 500) return res.status(400).json({ error: '班级学生总数不能超过500' });
+      // 过滤非字符串元素并标准化
+      const validNames = names
+        .filter(n => typeof n === 'string')
+        .map(n => n.trim())
+        .filter(n => n && n.length <= 50);
 
-      const newStudents = validNames
-        .filter(n => !existingNames.has(n.trim()))
-        .map((n, i) => ({ class_id, name: n.trim(), sort_order: total + i }));
+      const existing = await Student.findAll({ where: { class_id }, attributes: ['name'] });
+      const existingNames = new Set(existing.map(s => (s.name || '').trim()));
+      const total = existing.length;
+
+      // 输入列表内部去重 + 与已有名单去重
+      const dedupedNames = [];
+      for (const n of validNames) {
+        if (existingNames.has(n)) continue;
+        existingNames.add(n);
+        dedupedNames.push(n);
+      }
+
+      if (total + dedupedNames.length > 500) return res.status(400).json({ error: '班级学生总数不能超过500' });
+
+      const newStudents = dedupedNames
+        .map((n, i) => ({ class_id, name: n, sort_order: total + i }));
 
       const created = await Student.bulkCreate(newStudents);
       return res.json({ created: created.length, students: created });
@@ -48,7 +60,7 @@ router.post('/', auth, requireActivated, async (req, res) => {
     // 单个添加
     if (!name || typeof name !== 'string') return res.status(400).json({ error: '学生姓名不能为空' });
     if (name.trim().length === 0) return res.status(400).json({ error: '学生姓名不能为空' });
-    if (name.length > 50) return res.status(400).json({ error: '姓名最多50个字符' });
+    if (name.trim().length > 50) return res.status(400).json({ error: '姓名最多50个字符' });
 
     const totalCount = await Student.count({ where: { class_id } });
     if (totalCount >= 500) return res.status(400).json({ error: '班级学生总数不能超过500' });
@@ -82,6 +94,22 @@ router.put('/:id', auth, requireActivated, async (req, res) => {
     }
     const updates = {};
     allowed.forEach(k => { if (req.body[k] !== undefined) updates[k] = req.body[k]; });
+
+    if (updates.name !== undefined) {
+      if (typeof updates.name !== 'string' || !updates.name.trim()) {
+        return res.status(400).json({ error: '学生姓名不能为空' });
+      }
+      if (updates.name.trim().length > 50) {
+        return res.status(400).json({ error: '姓名最多50个字符' });
+      }
+
+      const trimmedName = updates.name.trim();
+      const dup = await Student.findOne({ where: { class_id: student.class_id, name: trimmedName } });
+      if (dup && dup.id !== student.id) {
+        return res.status(400).json({ error: '该班级已有同名学生' });
+      }
+      updates.name = trimmedName;
+    }
 
     await student.update(updates);
     res.json(student);

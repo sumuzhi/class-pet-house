@@ -49,7 +49,7 @@ const text = ref('')
 const loading = ref(false)
 
 async function handleAdd() {
-  const names = text.value.split('\n').map(s => s.trim()).filter(Boolean)
+  const names = [...new Set(text.value.split('\n').map(s => s.trim()).filter(Boolean))]
   if (!names.length) return
   loading.value = true
   try {

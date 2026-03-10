@@ -2,7 +2,7 @@
   <div class="w-full mx-auto flex flex-col md:flex-row gap-6 items-start pb-20 relative">
     
     <!-- 左侧/顶部 固定的菜单导航 -->
-    <div class="w-full md:w-64 bg-white/95 backdrop-blur-md rounded-2xl p-2 sm:p-4 shadow-sm flex-shrink-0 sticky top-[90px] md:top-[110px] z-30 self-start">
+    <div class="w-full md:w-64 bg-white/95 backdrop-blur-md rounded-2xl p-2 sm:p-4 shadow-sm flex-shrink-0 sticky top-[90px] md:top-0 z-30 self-start">
       <h2 class="text-xl font-bold text-gray-800 mb-4 px-2 hidden md:block">⚙️ 系统设置</h2>
       <nav class="flex flex-row md:flex-col gap-1.5 md:gap-2 overflow-x-auto scrollbar-hide">
         <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
@@ -22,20 +22,6 @@
       =========================================-->
       <div v-if="activeTab === 'basic'" class="space-y-6 animation-fade-in">
         <div class="bg-white rounded-2xl p-6 shadow-sm space-y-4">
-          <h3 class="text-lg font-bold text-gray-800 border-b pb-3 border-gray-100">系统信息</h3>
-          <div>
-            <label class="block text-sm font-medium text-gray-600 mb-1">系统自定义名称</label>
-            <input v-model="systemName" type="text" placeholder="例如：三年二班宠物屋"
-              class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-accent bg-gray-50 focus:bg-white transition" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-600 mb-1">当前班级标签</label>
-            <input v-model="className" type="text" placeholder="例如：星光闪耀班"
-              class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-accent bg-gray-50 focus:bg-white transition" />
-          </div>
-        </div>
-
-        <div class="bg-white rounded-2xl p-6 shadow-sm space-y-4">
           <h3 class="text-lg font-bold text-gray-800 border-b pb-3 border-gray-100">🎈 界面主题</h3>
           <p class="text-sm text-gray-500 mb-2">选择全班同学们喜爱的主题配色</p>
           <div class="flex flex-wrap gap-4 pt-2">
@@ -53,7 +39,7 @@
             class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-accent bg-gray-50 focus:bg-white transition font-mono tracking-wider" />
         </div>
 
-        <div class="bg-white rounded-2xl p-6 shadow-sm space-y-4 border-2 border-green-50">
+        <div v-if="enableParentShareView" class="bg-white rounded-2xl p-6 shadow-sm space-y-4 border-2 border-green-50">
           <h3 class="text-lg font-bold text-gray-800 border-b pb-3 border-gray-100 flex items-center justify-between">
             <span>🔗 家长纯净分享视图</span>
             <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">免密围观</span>
@@ -81,6 +67,65 @@
           class="w-full px-6 py-4 bg-accent text-white rounded-2xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 text-lg">
           <span>💾 保存当前全部基础设置</span>
         </button>
+      </div>
+
+      <!--========================================
+        班级管理
+      =========================================-->
+      <div v-if="activeTab === 'classes'" class="space-y-6 animation-fade-in">
+        <div class="bg-white rounded-2xl p-6 shadow-sm space-y-4">
+          <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b pb-4 border-gray-100">
+            <div>
+              <h3 class="text-lg font-bold text-gray-800">班级管理</h3>
+              <p class="text-sm text-gray-500 mt-1">在这里统一维护班级名称，避免和系统设置混在一起。</p>
+            </div>
+            <div class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1.5 rounded-full">
+              当前班级：{{ classStore.currentClass?.name || '未选择' }}
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input v-model="newClassName" type="text" placeholder="输入新班级名称..."
+              class="flex-1 px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-accent bg-gray-50 focus:bg-white transition" />
+            <button @click="createClass"
+              class="px-5 py-3 bg-accent text-white font-medium rounded-xl hover:bg-accent-hover transition whitespace-nowrap">
+              ➕ 新增班级
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow-sm">
+          <h3 class="text-lg font-bold text-gray-800 border-b pb-4 mb-4">已有班级</h3>
+
+          <div v-if="classStore.classes.length === 0" class="text-center py-10 text-gray-400 border-2 border-dashed border-gray-100 rounded-xl">
+            暂无班级
+          </div>
+
+          <div v-else class="space-y-3">
+            <button
+              v-for="cls in classStore.classes"
+              :key="cls.id"
+              @click="switchClass(cls)"
+              class="w-full flex items-center justify-between p-4 rounded-2xl border transition text-left group"
+              :class="cls.id === classStore.currentClass?.id ? 'border-accent bg-theme-light shadow-sm' : 'border-gray-100 bg-gray-50 hover:bg-white hover:border-gray-200'"
+            >
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-gray-800 truncate">{{ cls.name }}</span>
+                  <span v-if="cls.id === classStore.currentClass?.id" class="text-[11px] font-bold text-accent bg-white/80 px-2 py-0.5 rounded-full">当前</span>
+                </div>
+                <p class="text-xs text-gray-400 mt-1">点击可切换到该班级</p>
+              </div>
+              <button
+                @click.stop="renameClass(cls)"
+                class="p-2.5 text-gray-400 hover:text-sky-500 bg-white rounded-xl shadow-sm border border-gray-100 outline-none transition opacity-100 sm:opacity-0 group-hover:opacity-100"
+                title="编辑班级名称"
+              >
+                ✏️
+              </button>
+            </button>
+          </div>
+        </div>
       </div>
 
       <!--========================================
@@ -133,20 +178,44 @@
             <button @click="addRule"
               class="px-6 py-2.5 bg-accent text-white font-medium rounded-lg hover:bg-accent-hover transition shadow-sm">提交新建</button>
           </div>
+
+          <div class="mt-3 flex items-center gap-2">
+            <button
+              @click="rulesFilterTab = 'add'"
+              class="px-3 py-1.5 rounded-full text-xs font-bold border transition"
+              :class="rulesFilterTab === 'add' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'"
+            >
+              + 加分项
+            </button>
+            <button
+              @click="rulesFilterTab = 'deduct'"
+              class="px-3 py-1.5 rounded-full text-xs font-bold border transition"
+              :class="rulesFilterTab === 'deduct' ? 'bg-red-100 text-red-700 border-red-200' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'"
+            >
+              - 扣分项
+            </button>
+          </div>
         </div>
 
         <div class="flex-1 space-y-2 pr-2">
-          <div v-if="rules.length === 0" class="text-center py-10 text-gray-400 border-2 border-dashed border-gray-100 rounded-xl">还没配置任何积分规则</div>
-          <div v-for="r in rules" :key="r.id"
+          <div v-if="filteredRules.length === 0" class="text-center py-10 text-gray-400 border-2 border-dashed border-gray-100 rounded-xl">当前分类下还没配置积分规则</div>
+          <div v-for="r in filteredRules" :key="r.id"
              class="flex items-center justify-between p-3.5 rounded-xl bg-gray-50 hover:bg-orange-50 transition border border-transparent hover:border-orange-100 group">
              <div class="flex items-center gap-4">
                <span class="text-2xl inline-flex items-center justify-center w-10 h-10 bg-white rounded-xl shadow-sm border border-gray-100">{{ r.icon }}</span>
-               <span class="font-bold text-gray-700">{{ r.name }}</span>
+               <div class="flex items-center gap-2">
+                 <span class="font-bold text-gray-700">{{ r.name }}</span>
+                 <span v-if="r.is_system" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500">系统默认</span>
+               </div>
                <span :class="r.value > 0 ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'" class="px-3 py-1 rounded-full text-sm font-black border">
                  {{ r.value > 0 ? '+' : '' }}{{ r.value }}
                </span>
              </div>
-             <button @click="deleteRule(r)" class="p-2 text-gray-300 hover:text-red-500 bg-white rounded-lg shadow-sm border border-gray-100 outline-none transition opacity-100 sm:opacity-0 group-hover:opacity-100" title="删除规则">🗑️</button>
+             <div class="flex gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+               <button @click="editRule(r)" class="p-2 text-gray-300 hover:text-sky-500 bg-white rounded-lg shadow-sm border border-gray-100 outline-none transition" title="编辑规则">✏️</button>
+               <button v-if="!r.is_system" @click="deleteRule(r)" class="p-2 text-gray-300 hover:text-red-500 bg-white rounded-lg shadow-sm border border-gray-100 outline-none transition" title="删除规则">🗑️</button>
+               <span v-else class="p-2 text-slate-300 bg-white rounded-lg shadow-sm border border-gray-100 cursor-not-allowed" title="系统默认规则不可删除">🔒</span>
+             </div>
           </div>
         </div>
         <div class="mt-4 text-xs text-gray-400 text-center flex-shrink-0">提示：正数分值会在点击学生时产生“喂食”金币效果，负数则是扣分。配置实时生效。</div>
@@ -268,12 +337,40 @@
     <BatchAddModal v-if="showBatchAdd" @close="showBatchAdd = false" @added="showBatchAdd = false" />
     <ChangePasswordModal v-if="showChangePassword" :show="showChangePassword" @close="showChangePassword = false" />
     <AiReportModal v-if="showAiReport" :show="showAiReport" :class-id="classStore.currentClass?.id" @close="showAiReport = false" />
-    
+
+    <div v-if="showEditRuleModal" class="fixed inset-0 z-[1100] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" @click.self="closeEditRuleModal">
+      <div class="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-100 p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h4 class="text-lg font-bold text-slate-800">编辑积分规则</h4>
+          <button @click="closeEditRuleModal" class="w-8 h-8 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100">✕</button>
+        </div>
+
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs text-slate-500 mb-1">规则名称</label>
+            <input v-model="editRuleForm.name" type="text" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-accent bg-white" />
+          </div>
+          <div>
+            <label class="block text-xs text-slate-500 mb-1">图标（Emoji）</label>
+            <input v-model="editRuleForm.icon" type="text" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-accent bg-white" />
+          </div>
+          <div>
+            <label class="block text-xs text-slate-500 mb-1">分值（不能为0）</label>
+            <input v-model.number="editRuleForm.value" type="number" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-accent bg-white" />
+          </div>
+        </div>
+
+        <div class="mt-5 flex gap-2 justify-end">
+          <button @click="closeEditRuleModal" class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50">取消</button>
+          <button @click="submitEditRule" class="px-4 py-2 rounded-xl bg-accent text-white hover:bg-accent-hover">保存</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useClassStore } from '../stores/class'
 import { useAuthStore } from '../stores/auth'
@@ -293,6 +390,7 @@ const { setTheme } = useTheme()
 // 定义左侧标签页结构
 const tabs = [
   { id: 'basic', name: '基本设置', icon: '⚙️' },
+  { id: 'classes', name: '班级管理', icon: '🏫' },
   { id: 'students', name: '学生管理', icon: '👨‍🎓' },
   { id: 'rules', name: '积分规则', icon: '📋' },
   { id: 'tools', name: '超级工具', icon: '🛠️' },
@@ -300,17 +398,23 @@ const tabs = [
 ]
 const activeTab = ref('basic')
 
-const systemName = ref('')
-const className = ref('')
+const newClassName = ref('')
 const newStudentName = ref('')
 const showBatchAdd = ref(false)
-const rules = ref([])
+const rules = computed(() => classStore.scoreRules || [])
 const currentTheme = ref('pink')
 const newRule = ref({ name: '', icon: '⭐', value: 1 })
 const growthStagesText = ref('')
 const copyFromClassId = ref('')
 const showAiReport = ref(false)
 const showChangePassword = ref(false)
+const rulesFilterTab = ref('add')
+const showEditRuleModal = ref(false)
+const editingRuleId = ref(null)
+const editRuleForm = ref({ name: '', icon: '⭐', value: 1 })
+const enableParentShareView = ['1', 'true', 'yes', 'on'].includes(
+  String(import.meta.env.VITE_ENABLE_PARENT_SHARE_VIEW || 'false').toLowerCase()
+)
 
 const themes = [
   { id: 'pink', color: '#f472b6' },
@@ -323,24 +427,66 @@ const themes = [
   { id: 'yellow', color: '#facc15' },
 ]
 
-onMounted(async () => {
-  if (classStore.currentClass) {
-    systemName.value = classStore.currentClass.system_name || ''
-    className.value = classStore.currentClass.name || ''
-    currentTheme.value = classStore.currentClass.theme || 'pink'
-    growthStagesText.value = (classStore.currentClass.growth_stages || [0,5,10,20,30,45,60,75,90,100]).join(',')
-    const data = await api.get(`/score-rules/class/${classStore.currentClass.id}`)
-    rules.value = data
-  }
+const filteredRules = computed(() => {
+  if (!rules.value?.length) return []
+  if (rulesFilterTab.value === 'deduct') return rules.value.filter(r => Number(r.value) < 0)
+  return rules.value.filter(r => Number(r.value) > 0)
 })
+
+watch(() => classStore.currentClass?.id, async (classId) => {
+  if (!classId || !classStore.currentClass) return
+  currentTheme.value = classStore.currentClass.theme || 'pink'
+  growthStagesText.value = (classStore.currentClass.growth_stages || [0,5,10,20,30,45,60,75,90,100]).join(',')
+  await classStore.fetchScoreRules()
+}, { immediate: true })
+
+// === 班级管理 ===
+async function createClass() {
+  if (!newClassName.value.trim()) return
+  try {
+    const created = await api.post('/classes', { name: newClassName.value.trim() })
+    newClassName.value = ''
+    await classStore.fetchClasses()
+    const target = classStore.classes.find(c => c.id === created.id)
+    if (target) {
+      await classStore.switchClass(target)
+    }
+    Dialog.alert('新班级已创建')
+  } catch (err) { Dialog.alert(err.error || '创建班级失败') }
+}
+
+async function renameClass(cls) {
+  const name = await Dialog.prompt('修改班级名称', cls.name)
+  if (!name || name === cls.name) return
+  try {
+    await api.put(`/classes/${cls.id}`, { name })
+    await classStore.fetchClasses()
+    if (classStore.currentClass?.id === cls.id) {
+      const current = classStore.classes.find(c => c.id === cls.id)
+      if (current) classStore.currentClass = current
+    }
+    Dialog.alert('班级名称已更新')
+  } catch (err) { Dialog.alert(err.error || '修改班级名称失败') }
+}
+
+async function switchClass(cls) {
+  try {
+    await classStore.switchClass(cls)
+  } catch (err) { Dialog.alert(err.error || '切换班级失败') }
+}
 
 // === 学生名单管理 ===
 async function addStudent() {
-  if (!newStudentName.value.trim()) return
+  const trimmedName = newStudentName.value.trim()
+  if (!trimmedName) return
+  if (classStore.students.some(s => (s.name || '').trim() === trimmedName)) {
+    Dialog.alert('该班级已有同名学生')
+    return
+  }
   try {
     await api.post('/students', {
       class_id: classStore.currentClass.id,
-      name: newStudentName.value.trim()
+      name: trimmedName
     })
     newStudentName.value = ''
     await classStore.fetchStudents()
@@ -349,9 +495,14 @@ async function addStudent() {
 
 async function editStudent(s) {
   const name = await Dialog.prompt('修改学生姓名', s.name)
-  if (!name || name === s.name) return
+  const trimmedName = (name || '').trim()
+  if (!trimmedName || trimmedName === s.name) return
+  if (classStore.students.some(x => x.id !== s.id && (x.name || '').trim() === trimmedName)) {
+    Dialog.alert('该班级已有同名学生')
+    return
+  }
   try {
-    await api.put(`/students/${s.id}`, { name })
+    await api.put(`/students/${s.id}`, { name: trimmedName })
     await classStore.fetchStudents()
   } catch (err) { Dialog.alert(err.error || '修改失败') }
 }
@@ -369,30 +520,79 @@ async function deleteRule(r) {
   if (!(await Dialog.confirm(`你想删掉 "${r.name}" 这组规则吗？`))) return
   try {
     await api.delete(`/score-rules/${r.id}`)
-    rules.value = rules.value.filter(x => x.id !== r.id)
+    await classStore.fetchScoreRules()
   } catch (err) { Dialog.alert(err.error || '删除失败，请稍后重试') }
 }
 
 async function addRule() {
-  if (!newRule.value.name || !newRule.value.value) return
+  const ruleName = (newRule.value.name || '').trim()
+  const ruleValue = Number(newRule.value.value)
+  if (!ruleName || !Number.isInteger(ruleValue) || ruleValue === 0) {
+    Dialog.alert('规则名称不能为空，分值必须是非0整数')
+    return
+  }
   try {
-    const rule = await api.post('/score-rules', {
+    await api.post('/score-rules', {
       class_id: classStore.currentClass.id,
-      name: newRule.value.name,
-      icon: newRule.value.icon || '⭐',
-      value: newRule.value.value
+      name: ruleName,
+      icon: (newRule.value.icon || '⭐').trim() || '⭐',
+      value: ruleValue
     })
-    rules.value.push(rule)
+    await classStore.fetchScoreRules()
     newRule.value = { name: '', icon: '⭐', value: 1 } // Reset to ready defaults
   } catch (err) { Dialog.alert(err.error || '添加规则失败') }
+}
+
+async function editRule(rule) {
+  editingRuleId.value = rule.id
+  editRuleForm.value = {
+    name: rule.name || '',
+    icon: rule.icon || '⭐',
+    value: Number(rule.value)
+  }
+  showEditRuleModal.value = true
+}
+
+function closeEditRuleModal() {
+  showEditRuleModal.value = false
+  editingRuleId.value = null
+}
+
+async function submitEditRule() {
+  const trimmedName = (editRuleForm.value.name || '').trim()
+  const trimmedIcon = (editRuleForm.value.icon || '').trim() || '⭐'
+  const value = Number(editRuleForm.value.value)
+
+  if (!trimmedName) {
+    Dialog.alert('规则名称不能为空')
+    return
+  }
+  if (!Number.isInteger(value) || value === 0) {
+    Dialog.alert('分值必须是非0整数')
+    return
+  }
+  if (!editingRuleId.value) {
+    Dialog.alert('未找到要编辑的规则')
+    return
+  }
+
+  try {
+    await api.put(`/score-rules/${editingRuleId.value}`, {
+      name: trimmedName,
+      icon: trimmedIcon,
+      value
+    })
+    await classStore.fetchScoreRules()
+    closeEditRuleModal()
+  } catch (err) {
+    Dialog.alert(err.error || '编辑规则失败')
+  }
 }
 
 // === 基础设置与杂项保存 ===
 async function saveSettings() {
   try {
     const updateData = {
-      system_name: systemName.value,
-      name: className.value,
       theme: currentTheme.value
     }
     // 解析成长阶段
@@ -491,8 +691,7 @@ async function copyConfig() {
       to_class_id: classStore.currentClass.id
     })
     await classStore.fetchClasses()
-    const data = await api.get(`/score-rules/class/${classStore.currentClass.id}`)
-    rules.value = data
+    await classStore.fetchScoreRules()
     Dialog.alert('一键传功复制圆满成功！')
   } catch (err) { Dialog.alert(err.error || '无法完成云端配置转移') }
 }

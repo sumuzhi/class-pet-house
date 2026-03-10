@@ -7,6 +7,7 @@ const ScoreRule = sequelize.define('ScoreRule', {
   name: { type: DataTypes.STRING(50), allowNull: false },
   icon: { type: DataTypes.STRING(50), defaultValue: '⭐' },
   value: { type: DataTypes.INTEGER, allowNull: false },
+  is_system: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
   sort_order: { type: DataTypes.INTEGER, defaultValue: 0 }
 }, { tableName: 'score_rules' });
 

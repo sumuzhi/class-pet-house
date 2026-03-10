@@ -6,16 +6,33 @@
 
       <div v-if="error" class="bg-red-50 text-red-500 text-sm p-3 rounded-lg mb-4">{{ error }}</div>
 
-      <div class="space-y-4">
+      <form class="space-y-4" @submit.prevent="handleRegister" novalidate>
         <div>
           <label class="block text-sm text-gray-500 mb-1">用户名</label>
-          <input v-model="username" type="text" placeholder="3-20个字符"
+          <input
+            v-model="username"
+            type="text"
+            inputmode="text"
+            autocomplete="username"
+            autocapitalize="none"
+            autocorrect="off"
+            spellcheck="false"
+            name="username"
+            placeholder="3-20个字符"
             class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-accent ring-accent outline-none transition" />
         </div>
         <div>
           <label class="block text-sm text-gray-500 mb-1">密码</label>
           <div class="relative">
-            <input v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="至少6个字符"
+            <input
+              v-model="password"
+              :type="showPassword ? 'text' : 'password'"
+              autocomplete="new-password"
+              autocapitalize="none"
+              autocorrect="off"
+              spellcheck="false"
+              name="password"
+              placeholder="至少6个字符"
               class="w-full px-4 py-3 pr-10 rounded-xl border border-gray-200 focus:border-accent ring-accent outline-none transition" />
             <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
               <svg v-if="!showPassword" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
@@ -26,7 +43,15 @@
         <div>
           <label class="block text-sm text-gray-500 mb-1">确认密码</label>
           <div class="relative">
-            <input v-model="confirmPassword" :type="showConfirmPassword ? 'text' : 'password'" placeholder="再次输入密码"
+            <input
+              v-model="confirmPassword"
+              :type="showConfirmPassword ? 'text' : 'password'"
+              autocomplete="new-password"
+              autocapitalize="none"
+              autocorrect="off"
+              spellcheck="false"
+              name="confirmPassword"
+              placeholder="再次输入密码"
               class="w-full px-4 py-3 pr-10 rounded-xl border border-gray-200 focus:border-accent ring-accent outline-none transition" />
             <button type="button" @click="showConfirmPassword = !showConfirmPassword" class="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
               <svg v-if="!showConfirmPassword" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
@@ -36,14 +61,22 @@
         </div>
         <div>
           <label class="block text-sm text-gray-500 mb-1">系统邀请/激活码</label>
-          <input v-model="activationCode" type="text" placeholder="例如：CPH-A1B2C3D4" @keyup.enter="handleRegister"
+          <input
+            v-model="activationCode"
+            type="text"
+            inputmode="text"
+            autocapitalize="characters"
+            autocorrect="off"
+            spellcheck="false"
+            name="activationCode"
+            placeholder="例如：CPH-A1B2C3D4"
             class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-accent ring-accent outline-none transition uppercase" />
         </div>
-        <button @click="handleRegister" :disabled="loading"
+        <button type="submit" :disabled="loading"
           class="w-full py-3 bg-accent bg-accent-hover text-white rounded-xl font-medium transition active:scale-95 disabled:opacity-50">
           {{ loading ? '注册中...' : '立即注册' }}
         </button>
-      </div>
+      </form>
 
       <div class="mt-4 text-center text-sm text-gray-400">
         已有账号？<router-link to="/login" class="hover:text-accent">去登录</router-link>

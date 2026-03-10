@@ -76,7 +76,7 @@ router.post('/register', async (req, res) => {
     // 自动为新用户创建默认班级和积分规则
     const cls = await Class.create({ user_id: user.id, name: '默认班级' }, { transaction: t });
     for (let i = 0; i < DEFAULT_RULES.length; i++) {
-      await ScoreRule.create({ class_id: cls.id, ...DEFAULT_RULES[i], sort_order: i }, { transaction: t });
+      await ScoreRule.create({ class_id: cls.id, ...DEFAULT_RULES[i], is_system: true, sort_order: i }, { transaction: t });
     }
 
     await t.commit();
@@ -141,7 +141,7 @@ router.post('/activate', auth, async (req, res) => {
     // 创建默认班级和积分规则
     const cls = await Class.create({ user_id: req.userId, name: '默认班级' }, { transaction: t });
     for (let i = 0; i < DEFAULT_RULES.length; i++) {
-      await ScoreRule.create({ class_id: cls.id, ...DEFAULT_RULES[i], sort_order: i }, { transaction: t });
+      await ScoreRule.create({ class_id: cls.id, ...DEFAULT_RULES[i], is_system: true, sort_order: i }, { transaction: t });
     }
 
     await t.commit();

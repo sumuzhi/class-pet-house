@@ -6,16 +6,33 @@
 
       <div v-if="error" class="bg-red-50 text-red-500 text-sm p-3 rounded-lg mb-4">{{ error }}</div>
 
-      <div class="space-y-4">
+      <form class="space-y-4" @submit.prevent="handleLogin" novalidate>
         <div>
           <label class="block text-sm text-gray-500 mb-1">用户名</label>
-          <input v-model="username" type="text" placeholder="请输入用户名"
+          <input
+            v-model="username"
+            type="text"
+            inputmode="text"
+            autocomplete="username"
+            autocapitalize="none"
+            autocorrect="off"
+            spellcheck="false"
+            name="username"
+            placeholder="请输入用户名"
             class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-accent ring-accent outline-none transition" />
         </div>
         <div>
           <label class="block text-sm text-gray-500 mb-1">密码</label>
           <div class="relative">
-            <input v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="请输入密码" @keyup.enter="handleLogin"
+            <input
+              v-model="password"
+              :type="showPassword ? 'text' : 'password'"
+              autocomplete="current-password"
+              autocapitalize="none"
+              autocorrect="off"
+              spellcheck="false"
+              name="password"
+              placeholder="请输入密码"
               class="w-full px-4 py-3 pr-10 rounded-xl border border-gray-200 focus:border-accent ring-accent outline-none transition" />
             <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
               <svg v-if="!showPassword" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
@@ -23,11 +40,11 @@
             </button>
           </div>
         </div>
-        <button @click="handleLogin" :disabled="loading"
+        <button type="submit" :disabled="loading"
           class="w-full py-3 bg-accent bg-accent-hover text-white rounded-xl font-medium transition active:scale-95 disabled:opacity-50">
           {{ loading ? '登录中...' : '登录' }}
         </button>
-      </div>
+      </form>
 
       <div class="mt-4 text-center text-sm text-gray-400 space-x-4">
         <router-link to="/register" class="hover:text-accent">注册账号</router-link>
@@ -65,7 +82,12 @@ async function handleLogin() {
       router.push('/')
     }
   } catch (err) {
-    error.value = err.error || '登录失败'
+    const rawError = err?.error || err?.message || ''
+    if (/邮箱|email/i.test(rawError)) {
+      error.value = '请输入正确的用户名和密码'
+    } else {
+      error.value = rawError || '登录失败'
+    }
   } finally {
     loading.value = false
   }

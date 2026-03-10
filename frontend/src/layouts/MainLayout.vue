@@ -7,12 +7,39 @@
         <div class="absolute -left-10 -top-10 w-24 h-24 bg-cyan-400 rounded-full blur-[40px] opacity-20 pointer-events-none"></div>
 
         <!-- 第一行: 左侧班级 & 右侧操作 -->
-        <div class="flex items-center justify-between gap-1 sm:gap-2 z-10 min-w-0 w-full">
-          <button @click="showClassModal = true" class="group flex shrink min-w-0 items-center gap-1 sm:gap-1.5 text-slate-700 font-bold bg-slate-50 hover:bg-slate-100 px-2 sm:px-3 py-1 rounded-full transition-colors border border-slate-100">
-            <span class="text-base sm:text-lg drop-shadow-sm shrink-0">🐾</span> 
-            <span class="text-xs sm:text-sm font-bold tracking-wide truncate max-w-[4.5rem] min-[375px]:max-w-[7rem] sm:max-w-[18rem] md:max-w-[24rem]">{{ classStore.currentClass?.name || '默认班级' }}</span>
-            <span class="text-[10px] text-slate-400 shrink-0">▼</span>
-          </button>
+        <div class="flex items-center justify-between gap-1 sm:gap-2 z-10 min-w-0 w-full md:w-auto md:flex-none">
+          <div ref="classDropdownRef" class="relative shrink min-w-0">
+            <button
+              type="button"
+              :disabled="classSwitching"
+              @click="toggleClassDropdown"
+              class="group flex w-full items-center gap-1 sm:gap-1.5 rounded-full border border-slate-100 bg-slate-50 hover:bg-slate-100 px-2 sm:px-3 py-1 text-slate-700 transition-colors disabled:cursor-wait disabled:opacity-70"
+            >
+              <span class="text-base sm:text-lg drop-shadow-sm shrink-0">🐾</span>
+              <span class="text-xs sm:text-sm font-bold tracking-wide truncate max-w-[7rem] sm:max-w-[18rem] md:max-w-[24rem]">
+                {{ classStore.currentClass?.name || '默认班级' }}
+              </span>
+              <span class="text-[10px] text-slate-400 shrink-0 transition-transform" :class="classDropdownOpen ? 'rotate-180' : ''">▼</span>
+            </button>
+
+            <div
+              v-if="classDropdownOpen"
+              class="absolute left-0 top-[calc(100%+0.45rem)] min-w-[12rem] max-w-[16rem] bg-white border border-slate-100 rounded-2xl shadow-[0_14px_30px_-12px_rgba(0,0,0,0.25)] p-1.5 z-[70]"
+            >
+              <button
+                v-for="cls in classStore.classes"
+                :key="cls.id"
+                type="button"
+                :disabled="classSwitching"
+                @click="onClassChange(cls.id)"
+                class="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-left text-sm font-semibold transition-colors disabled:cursor-wait"
+                :class="cls.id === classStore.currentClass?.id ? 'bg-accent text-white' : 'text-slate-600 hover:bg-slate-50'"
+              >
+                <span class="truncate">{{ cls.name }}</span>
+                <span v-if="cls.id === classStore.currentClass?.id" class="text-xs">✓</span>
+              </button>
+            </div>
+          </div>
 
           <!-- 功能按钮 -->
           <div v-if="route.path === '/'" class="flex shrink-0 items-center justify-end gap-1 sm:gap-1.5 pl-1 ml-auto">
@@ -41,10 +68,10 @@
         </div>
 
         <!-- 搜索框 (移动端第二行，桌面端中间flex-1) -->
-        <div v-if="route.path === '/'" class="relative z-10 md:flex-1 md:max-w-md">
+        <div v-if="route.path === '/'" class="relative z-10 w-full md:flex-1 md:min-w-[240px] md:max-w-md">
           <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
           <input v-model="searchQuery" type="text" placeholder="搜索学生..."
-            class="w-full pl-10 pr-4 py-1.5 bg-slate-100/80 rounded-full border-none text-sm focus:ring-2 focus:ring-accent focus:bg-white outline-none transition-all font-bold text-slate-600 placeholder-slate-400" />
+            class="w-full min-w-0 pl-10 pr-4 py-1.5 bg-slate-100/80 rounded-full border-none text-sm focus:ring-2 focus:ring-accent focus:bg-white outline-none transition-all font-bold text-slate-600 placeholder-slate-400" />
         </div>
 
         <!-- 桌面端导航链接 (仅md及以上显示) -->
@@ -75,7 +102,7 @@
     <div :style="{ height: `${topPanelHeight}px` }"></div>
 
     <!-- 分组筛选栏 (极简高级圆角)只在首页展示，并且在分组管理模式下隐藏 -->
-    <div v-if="classStore.groups.length && route.path === '/' && !groupMode" class="max-w-[1600px] 2xl:max-w-[1800px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 mb-3 relative z-40">
+    <div v-if="classStore.groups.length && route.path === '/' && !groupMode" class="max-w-[1600px] 2xl:max-w-[1800px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 mt-2 sm:mt-3 mb-0 relative z-40">
       <div class="bg-white/60 backdrop-blur-md border border-white/80 rounded-full px-1.5 py-1 flex gap-1 overflow-x-auto shadow-sm w-full sm:w-auto">
         <button @click="activeGroup = null; groupMode = false"
           :class="activeGroup === null ? 'bg-accent/10 text-accent font-extrabold' : 'text-slate-500 hover:bg-white/60'"
@@ -127,9 +154,6 @@
       </div>
     </div>
 
-    <!-- 班级切换弹窗 -->
-    <ClassModal v-if="showClassModal" @close="showClassModal = false" />
-
     <!-- 批量喂养弹窗 -->
     <ScoreRuleModal
       v-if="showBatchScoreModal"
@@ -178,10 +202,10 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { useClassStore } from '../stores/class'
 import { useTheme } from '../composables/useTheme'
-import ClassModal from '../components/ClassModal.vue'
 import ScoreRuleModal from '../components/ScoreRuleModal.vue'
 import RandomPick from '../components/RandomPick.vue'
 import ClassTimer from '../components/ClassTimer.vue'
+import Dialog from '../utils/dialog'
 
 const classStore = useClassStore()
 const route = useRoute()
@@ -193,9 +217,10 @@ const undoMode = ref(false)
 const activeGroup = ref(null)
 const sortMode = ref('manual')
 const selectedIds = ref([])
-const showClassModal = ref(false)
+const classSwitching = ref(false)
+const classDropdownOpen = ref(false)
+const classDropdownRef = ref(null)
 const showBatchScoreModal = ref(false)
-const showMenu = ref(false)
 const showRandomPick = ref(false)
 const showTimer = ref(false)
 const topPanelRef = ref(null)
@@ -256,6 +281,35 @@ function toggleSelectAll() {
   }
 }
 
+function toggleClassDropdown() {
+  classDropdownOpen.value = !classDropdownOpen.value
+}
+
+async function onClassChange(classId) {
+  const normalizedId = Number(classId)
+  classDropdownOpen.value = false
+  if (!normalizedId) return
+  const target = classStore.classes.find(c => c.id === normalizedId)
+  if (!target || target.id === classStore.currentClass?.id) return
+
+  try {
+    classSwitching.value = true
+    await classStore.switchClass(target)
+  } catch (err) {
+    Dialog.alert(err.error || '切换班级失败')
+  } finally {
+    classSwitching.value = false
+  }
+}
+
+function handleClickOutsideClassDropdown(e) {
+  if (!classDropdownOpen.value) return
+  if (!classDropdownRef.value) return
+  if (!classDropdownRef.value.contains(e.target)) {
+    classDropdownOpen.value = false
+  }
+}
+
 function exitBatch() {
   batchMode.value = false
   selectedIds.value = []
@@ -275,6 +329,8 @@ onMounted(async () => {
     topPanelObserver = new ResizeObserver(updateTopPanelHeight)
     topPanelObserver.observe(topPanelRef.value)
   }
+  window.addEventListener('mousedown', handleClickOutsideClassDropdown)
+  window.addEventListener('touchstart', handleClickOutsideClassDropdown)
 
   try {
     await classStore.fetchClasses()
@@ -290,6 +346,8 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', updateTopPanelHeight)
+  window.removeEventListener('mousedown', handleClickOutsideClassDropdown)
+  window.removeEventListener('touchstart', handleClickOutsideClassDropdown)
   topPanelObserver?.disconnect()
   topPanelObserver = null
 })
