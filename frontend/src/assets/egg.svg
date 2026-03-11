@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="宠物蛋">
+  <defs>
+    <radialGradient id="shell" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="65%" stop-color="#eef4ff" />
+      <stop offset="100%" stop-color="#d9e6fb" />
+    </radialGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.72" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <ellipse cx="128" cy="132" rx="78" ry="96" fill="url(#shell)" stroke="#c9d9f3" stroke-width="4"/>
+  <ellipse cx="103" cy="94" rx="34" ry="23" fill="url(#shine)"/>
+  <ellipse cx="128" cy="214" rx="42" ry="10" fill="#dbeafe" opacity="0.35"/>
+</svg>

@@ -38,8 +38,8 @@
 
     <!-- 宠物图片区 -->
     <div class="flex justify-center items-center relative my-1 sm:my-3 h-28 sm:h-40 md:h-44">
-      <div v-if="!student.pet_type" class="w-16 h-16 sm:w-28 sm:h-28 flex items-center justify-center text-2xl sm:text-5xl bg-slate-50 text-slate-300 font-bold rounded-full border border-slate-100 shadow-inner">
-        {{ student.name ? student.name.charAt(0) : '' }}
+      <div v-if="!student.pet_type" class="w-16 h-16 sm:w-28 sm:h-28 flex items-center justify-center bg-slate-50 rounded-full border border-slate-100 shadow-inner overflow-hidden">
+        <img :src="eggImage" alt="宠物蛋" class="w-full h-full object-contain p-1 sm:p-2" />
       </div>
       <div v-else class="relative w-full h-full flex justify-center items-center animate-float-idle">
         <img v-if="petImageUrl" :src="petImageUrl" :alt="student.pet_name || '宠物'"
@@ -111,6 +111,7 @@ import { computed, ref, watch } from 'vue'
 import { PETS, getPetImageUrl } from '../utils/pets'
 import OdometerNumber from './OdometerNumber.vue'
 import { useClassStore } from '../stores/class'
+import eggImage from '../assets/egg.svg'
 
 const props = defineProps({
   student: Object,
