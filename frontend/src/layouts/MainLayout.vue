@@ -2,7 +2,7 @@
   <div class="min-h-screen text-gray-800 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-4" :style="{ backgroundColor: 'var(--theme-bg, #fef5b5)' }">
     <!-- 顶部主控面板 -->
     <div ref="topPanelRef" class="fixed top-0 left-0 right-0 z-50 pt-2 pb-1.5 px-3 sm:px-4 md:px-6 lg:px-8 pointer-events-none flex justify-center">
-      <div class="w-full max-w-[1600px] 2xl:max-w-[1800px] bg-white/95 backdrop-blur-3xl rounded-[1.35rem] sm:rounded-[1.75rem] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.1)] px-3 py-2.5 sm:px-4 sm:py-3 flex flex-col md:flex-row md:items-center gap-1.5 md:gap-3 pointer-events-auto border border-white relative overflow-hidden">
+      <div class="w-full max-w-[1600px] 2xl:max-w-[1800px] bg-white/95 backdrop-blur-3xl rounded-[1.35rem] sm:rounded-[1.75rem] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.1)] px-3 py-2.5 sm:px-4 sm:py-3 flex flex-col md:flex-row md:items-center gap-1.5 md:gap-3 pointer-events-auto border border-white relative overflow-visible">
         <!-- 装饰性元素 -->
         <div class="absolute -left-10 -top-10 w-24 h-24 bg-cyan-400 rounded-full blur-[40px] opacity-20 pointer-events-none"></div>
 
