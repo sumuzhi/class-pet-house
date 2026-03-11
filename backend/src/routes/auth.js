@@ -1,32 +1,15 @@
 const router = require('express').Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { User, Class, ScoreRule, License, sequelize } = require('../models');
+const { User, Class, License, sequelize } = require('../models');
 const auth = require('../middleware/auth');
+const { ensureDefaultScoreRulesForClass } = require('../services/scoreRuleDefaults');
 
 const generateToken = (user) => {
   return jwt.sign({ id: user.id }, process.env.JWT_SECRET || 'class-pet-house-secret', {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d'
   });
 };
-
-// 默认积分规则
-const DEFAULT_RULES = [
-  { name: '早读打卡', icon: '📖', value: 1 },
-  { name: '作业优秀', icon: '⭐', value: 3 },
-  { name: '课堂表现好', icon: '🙋', value: 2 },
-  { name: '帮助同学', icon: '🤝', value: 2 },
-  { name: '考试进步', icon: '📈', value: 5 },
-  { name: '值日认真', icon: '🧹', value: 1 },
-  { name: '运动达标', icon: '🏃', value: 2 },
-  { name: '迟到', icon: '⏰', value: -1 },
-  { name: '未交作业', icon: '📝', value: -2 },
-  { name: '课堂违纪', icon: '🚫', value: -2 },
-  { name: '打架', icon: '👊', value: -5 },
-  { name: '说脏话', icon: '🤐', value: -1 },
-  { name: '不守纪律', icon: '⚠️', value: -1 },
-  { name: '损坏公物', icon: '💔', value: -3 }
-];
 
 // 注册与激活合并
 router.post('/register', async (req, res) => {
@@ -75,9 +58,7 @@ router.post('/register', async (req, res) => {
 
     // 自动为新用户创建默认班级和积分规则
     const cls = await Class.create({ user_id: user.id, name: '默认班级' }, { transaction: t });
-    for (let i = 0; i < DEFAULT_RULES.length; i++) {
-      await ScoreRule.create({ class_id: cls.id, ...DEFAULT_RULES[i], is_system: true, sort_order: i }, { transaction: t });
-    }
+    await ensureDefaultScoreRulesForClass(cls.id, { transaction: t });
 
     await t.commit();
     const token = generateToken(user);
@@ -140,9 +121,7 @@ router.post('/activate', auth, async (req, res) => {
 
     // 创建默认班级和积分规则
     const cls = await Class.create({ user_id: req.userId, name: '默认班级' }, { transaction: t });
-    for (let i = 0; i < DEFAULT_RULES.length; i++) {
-      await ScoreRule.create({ class_id: cls.id, ...DEFAULT_RULES[i], is_system: true, sort_order: i }, { transaction: t });
-    }
+    await ensureDefaultScoreRulesForClass(cls.id, { transaction: t });
 
     await t.commit();
     res.json({ message: '激活成功', user: { id: req.user.id, username: req.user.username, is_activated: true } });

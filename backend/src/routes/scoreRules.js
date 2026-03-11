@@ -2,27 +2,12 @@ const router = require('express').Router();
 const { ScoreRule, Class } = require('../models');
 const auth = require('../middleware/auth');
 const { requireActivated } = require('../middleware/auth');
-
-const SYSTEM_DEFAULT_RULES = [
-  { name: '早读打卡', icon: '📖', value: 1 },
-  { name: '作业优秀', icon: '⭐', value: 3 },
-  { name: '课堂表现好', icon: '🙋', value: 2 },
-  { name: '帮助同学', icon: '🤝', value: 2 },
-  { name: '考试进步', icon: '📈', value: 5 },
-  { name: '值日认真', icon: '🧹', value: 1 },
-  { name: '运动达标', icon: '🏃', value: 2 },
-  { name: '迟到', icon: '⏰', value: -1 },
-  { name: '未交作业', icon: '📝', value: -2 },
-  { name: '课堂违纪', icon: '🚫', value: -2 },
-  { name: '打架', icon: '👊', value: -5 },
-  { name: '说脏话', icon: '🤐', value: -1 },
-  { name: '不守纪律', icon: '⚠️', value: -1 },
-  { name: '损坏公物', icon: '💔', value: -3 }
-];
+const { DEFAULT_SCORE_RULES } = require('../constants/defaultScoreRules');
+const { ensureDefaultScoreRulesForClass } = require('../services/scoreRuleDefaults');
 
 function isSystemDefaultRule(rule) {
   if (rule.is_system) return true;
-  return SYSTEM_DEFAULT_RULES.some((d) =>
+  return DEFAULT_SCORE_RULES.some((d) =>
     d.name === rule.name &&
     d.icon === rule.icon &&
     Number(d.value) === Number(rule.value)
@@ -37,10 +22,18 @@ router.get('/class/:classId', auth, requireActivated, async (req, res) => {
     });
     if (!cls) return res.status(404).json({ error: '班级不存在' });
 
-    const rules = await ScoreRule.findAll({
+    let rules = await ScoreRule.findAll({
       where: { class_id: cls.id },
       order: [['sort_order', 'ASC']]
     });
+
+    if (!rules.length) {
+      await ensureDefaultScoreRulesForClass(cls.id);
+      rules = await ScoreRule.findAll({
+        where: { class_id: cls.id },
+        order: [['sort_order', 'ASC']]
+      });
+    }
 
     // 为历史数据自动补齐系统默认标记，避免误删
     const needMark = rules.filter(r => !r.is_system && isSystemDefaultRule(r));

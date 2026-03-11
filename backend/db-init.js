@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { sequelize } = require('./src/models');
+const { backfillDefaultScoreRulesForAllClasses } = require('./src/services/scoreRuleDefaults');
 
 async function initDB() {
     try {
@@ -9,8 +10,10 @@ async function initDB() {
         // 强制同步所有模型到数据库 (创建所有缺失的表)
         // 注意：alter: true 会安全地修改现有表以匹配模型，不会删除数据
         await sequelize.sync({ alter: true });
+        const { classCount, ruleCount } = await backfillDefaultScoreRulesForAllClasses();
 
         console.log('✅ 数据库同步完成，所有必要表结构已创建！');
+        console.log(`✅ 默认积分规则检查完成：补齐班级 ${classCount} 个，新增规则 ${ruleCount} 条`);
         process.exit(0);
     } catch (error) {
         console.error('❌ 数据库同步失败:', error.message);

@@ -3,6 +3,7 @@ const { Class, Student, ScoreRule, ShopItem, Group, History, ExchangeRecord } = 
 const sequelize = require('../config/database');
 const auth = require('../middleware/auth');
 const { requireActivated } = require('../middleware/auth');
+const { ensureDefaultScoreRulesForClass } = require('../services/scoreRuleDefaults');
 
 // 获取班级列表
 router.get('/', auth, requireActivated, async (req, res) => {
@@ -19,6 +20,7 @@ router.get('/', auth, requireActivated, async (req, res) => {
 
 // 创建班级
 router.post('/', auth, requireActivated, async (req, res) => {
+  let t;
   try {
     const { name } = req.body;
     if (!name || typeof name !== 'string') return res.status(400).json({ error: '班级名称不能为空' });
@@ -26,13 +28,19 @@ router.post('/', auth, requireActivated, async (req, res) => {
     const count = await Class.count({ where: { user_id: req.userId } });
     if (count >= 20) return res.status(400).json({ error: '最多创建20个班级' });
 
+    t = await sequelize.transaction();
     const cls = await Class.create({
       user_id: req.userId,
       name: name.trim(),
       sort_order: count
-    });
+    }, { transaction: t });
+
+    await ensureDefaultScoreRulesForClass(cls.id, { transaction: t });
+    await t.commit();
+
     res.json(cls);
   } catch (err) {
+    if (t) await t.rollback();
     res.status(500).json({ error: '创建失败' });
   }
 });
