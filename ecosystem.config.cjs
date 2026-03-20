@@ -2,6 +2,7 @@ module.exports = {
     apps: [
         {
             name: 'class-pet-house-api',
+            cwd: __dirname,
             script: './backend/src/server.js',
             instances: 1,
             autorestart: true,
