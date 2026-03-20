@@ -7,6 +7,13 @@ const sanitize = require('./middleware/sanitize');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 const app = express();
+const normalizeBasePrefix = (value) => {
+  const trimmed = (value || '').trim();
+  if (!trimmed || trimmed === '/') return '';
+  return `/${trimmed.replace(/^\/+|\/+$/g, '')}`;
+};
+const apiBasePrefix = normalizeBasePrefix(process.env.API_BASE_PREFIX ?? '/class-pet-house');
+const apiBasePath = `${apiBasePrefix}/api`;
 
 // 中间件
 app.use(cors());
@@ -20,9 +27,9 @@ const authLimiter = rateLimit({
   max: 20,
   message: { error: '请求过于频繁，请稍后再试' }
 });
-app.use('/api/auth/register', authLimiter);
-app.use('/api/auth/login', authLimiter);
-app.use('/api/auth/reset-password', authLimiter);
+app.use(`${apiBasePath}/auth/register`, authLimiter);
+app.use(`${apiBasePath}/auth/login`, authLimiter);
+app.use(`${apiBasePath}/auth/reset-password`, authLimiter);
 
 // 静态文件（宠物图片）- 从 COS 读取
 const COS_SECRET_ID = (process.env.COS_SECRET_ID || '').trim();
@@ -117,21 +124,21 @@ const { router: syncRouter } = require('./routes/sync');
 const aiRoutes = require('./routes/ai');
 const publicRoutes = require('./routes/public');
 
-app.use('/api/auth', authRoutes);
-app.use('/api/classes', classRoutes);
-app.use('/api/students', studentRoutes);
-app.use('/api/groups', groupRoutes);
-app.use('/api/history', historyRoutes);
-app.use('/api/shop', shopRoutes);
-app.use('/api/score-rules', scoreRuleRoutes);
-app.use('/api/export', exportRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/sync', syncRouter);
-app.use('/api/ai', aiRoutes);
-app.use('/api/public', publicRoutes);
+app.use(`${apiBasePath}/auth`, authRoutes);
+app.use(`${apiBasePath}/classes`, classRoutes);
+app.use(`${apiBasePath}/students`, studentRoutes);
+app.use(`${apiBasePath}/groups`, groupRoutes);
+app.use(`${apiBasePath}/history`, historyRoutes);
+app.use(`${apiBasePath}/shop`, shopRoutes);
+app.use(`${apiBasePath}/score-rules`, scoreRuleRoutes);
+app.use(`${apiBasePath}/export`, exportRoutes);
+app.use(`${apiBasePath}/admin`, adminRoutes);
+app.use(`${apiBasePath}/sync`, syncRouter);
+app.use(`${apiBasePath}/ai`, aiRoutes);
+app.use(`${apiBasePath}/public`, publicRoutes);
 
 // 健康检查
-app.get('/api/health', (req, res) => {
+app.get(`${apiBasePath}/health`, (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
@@ -141,7 +148,8 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(frontendDist));
   // SPA fallback：所有非API请求返回index.html
   app.get(/(.*)/, (req, res) => {
-    if (!req.path.startsWith('/api/')) {
+    const isApiRequest = req.path === apiBasePath || req.path.startsWith(`${apiBasePath}/`);
+    if (!isApiRequest) {
       res.sendFile(path.join(frontendDist, 'index.html'));
     }
   });

@@ -172,6 +172,7 @@
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import Dialog from '../utils/dialog'
+import { API_BASE_PATH } from '../utils/api'
 
 const adminUser = ref('')
 const adminPass = ref('')
@@ -216,7 +217,7 @@ watch(filterType, () => {
 
 // 创建专门的 Axios 实例（绕过全局拦截器，直接带 Basic Auth）
 const adminApi = axios.create({
-  baseURL: '/api/admin',
+  baseURL: `${API_BASE_PATH}/admin`,
   timeout: 10000
 })
 

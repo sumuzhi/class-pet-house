@@ -5,7 +5,8 @@
     "cwd": "/var/www/class-pet-house/backend",
     "env": {
       "NODE_ENV": "production",
-      "PORT": 3000
+      "PORT": 3000,
+      "API_BASE_PREFIX": "/class-pet-house"
     },
     "instances": 1,
     "autorestart": true,

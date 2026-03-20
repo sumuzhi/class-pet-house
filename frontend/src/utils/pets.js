@@ -67,5 +67,5 @@ export const getPetImageUrl = (folder, stage) => {
   const baseUrl = import.meta.env.VITE_IMAGE_BASE_URL || '/pet-images'
   // 显式转义中文路径，防止部分浏览器或代理出现连接异常
   const encodedFolder = encodeURIComponent(folder)
-  return `${baseUrl}/${encodedFolder}/${stage}.webp?v=3`
+  return `${baseUrl}/${encodedFolder}/${stage}.webp`
 }

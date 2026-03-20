@@ -61,6 +61,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import { API_BASE_PATH } from '../utils/api'
 
 const props = defineProps({
   show: Boolean,
@@ -90,7 +91,7 @@ const generate = async () => {
 
   try {
     const token = localStorage.getItem('token')
-    const response = await fetch('/api/ai/weekly-report', {
+    const response = await fetch(`${API_BASE_PATH}/ai/weekly-report`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

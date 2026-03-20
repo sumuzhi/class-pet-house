@@ -6,10 +6,12 @@ module.exports = {
             instances: 1,
             autorestart: true,
             watch: false,
+            exec_mode: 'fork',
             max_memory_restart: '1G',
             env: {
                 NODE_ENV: 'production',
-                PORT: 3000
+                PORT: 3008,
+                API_BASE_PREFIX: '/class-pet-house'
             }
         }
     ]

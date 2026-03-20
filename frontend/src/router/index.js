@@ -27,9 +27,11 @@ const routes = [
     ]
   }
 ]
+const routerBaseRaw = (import.meta.env.VITE_ROUTER_BASE || '/class-pet-house/').trim()
+const routerBase = `${routerBaseRaw.replace(/^\/?/, '/').replace(/\/+$/, '')}/`
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(routerBase),
   routes
 })
 

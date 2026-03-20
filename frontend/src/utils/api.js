@@ -1,7 +1,9 @@
 import axios from 'axios'
 
+const API_BASE_PATH = (import.meta.env.VITE_API_BASE_PATH || '/class-pet-house/api').replace(/\/+$/, '')
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: API_BASE_PATH,
   timeout: 10000
 })
 
@@ -30,4 +32,5 @@ api.interceptors.response.use(
   }
 )
 
+export { API_BASE_PATH }
 export default api
