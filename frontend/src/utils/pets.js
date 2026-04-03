@@ -60,7 +60,8 @@ export const PETS = [
   { id: 'chipmunk', name: '花栗鼠', folder: '花栗鼠十阶段图片' },
   { id: 'flamingo', name: '火烈鸟', folder: '火烈鸟十阶段图片' },
   { id: 'red-panda', name: '小熊猫', folder: '小熊猫十阶段图片' },
-  { id: 'baby-shark', name: '小鲨鱼', folder: '小鲨鱼十阶段图片' }
+  { id: 'baby-shark', name: '小鲨鱼', folder: '小鲨鱼十阶段图片' },
+  { id: 'pig', name: '小猪', folder: '猪十阶段图片' },
 ]
 
 export const getPetImageUrl = (folder, stage) => {

@@ -10,7 +10,7 @@ module.exports = {
             exec_mode: 'fork',
             max_memory_restart: '1G',
             env: {
-                NODE_ENV: 'production',
+                NODE_ENV: 'development',
                 PORT: 3008,
                 API_BASE_PREFIX: '/class-pet-house'
             }

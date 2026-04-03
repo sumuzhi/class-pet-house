@@ -67,7 +67,7 @@ router.post('/', auth, requireActivated, async (req, res) => {
       const student = await Student.findOne({ where: { id: sid, class_id } });
       if (!student) continue;
 
-      await student.update({ food_count: Math.max(0, student.food_count + rule.value) });
+      await student.update({ food_count: student.food_count + rule.value });
       const record = await History.create({
         class_id, student_id: sid,
         rule_id: rule.id, rule_name: rule.name,
@@ -99,7 +99,7 @@ router.post('/revoke', auth, requireActivated, async (req, res) => {
 
     const student = await Student.findByPk(record.student_id);
     if (student) {
-      await student.update({ food_count: Math.max(0, student.food_count - record.value) });
+      await student.update({ food_count: student.food_count - record.value });
     }
 
     await record.update({ is_revoked: true });
@@ -126,7 +126,7 @@ router.post('/revoke-batch', auth, requireActivated, async (req, res) => {
 
       const student = await Student.findByPk(record.student_id);
       if (student) {
-        await student.update({ food_count: Math.max(0, student.food_count - record.value) });
+        await student.update({ food_count: student.food_count - record.value });
       }
       await record.update({ is_revoked: true });
       count++;
