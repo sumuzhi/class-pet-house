@@ -159,11 +159,11 @@ const maxFood = computed(() => {
 })
 
 const progressPercent = computed(() => {
-  return Math.min(100, (props.student.food_count / maxFood.value) * 100)
+  return Math.min(100, Math.max(0, (props.student.food_count / maxFood.value) * 100))
 })
 
 const showProgressBar = computed(() => {
-  return !!props.student.pet_type && Number(props.student.food_count) >= 0
+  return !!props.student.pet_type
 })
 
 const isMaxLevel = computed(() => {
