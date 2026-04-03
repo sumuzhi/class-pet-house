@@ -59,7 +59,7 @@
     </div>
 
     <!-- 进度条区域 -->
-    <div v-if="student.pet_type" class="flex flex-col gap-0.5 sm:gap-1 mb-1.5 sm:mb-2">
+    <div v-if="showProgressBar" class="flex flex-col gap-0.5 sm:gap-1 mb-1.5 sm:mb-2">
       <div class="flex justify-between items-center text-[10px] sm:text-xs font-semibold">
         <span class="text-slate-400">本级进度</span>
         <span v-if="!isMaxLevel" class="text-blue-600 font-bold flex items-center gap-0.5">
@@ -160,6 +160,10 @@ const maxFood = computed(() => {
 
 const progressPercent = computed(() => {
   return Math.min(100, (props.student.food_count / maxFood.value) * 100)
+})
+
+const showProgressBar = computed(() => {
+  return !!props.student.pet_type && Number(props.student.food_count) >= 0
 })
 
 const isMaxLevel = computed(() => {
